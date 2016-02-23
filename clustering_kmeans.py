@@ -239,24 +239,6 @@ class KMeans:
         for ii in range(self.__k):
             self.__clusterMeans[ii] = np.mean(self.__obs[self.__clusterLabels[ii]], axis=0)
 
-        # for index in range(self.__n):
-        #     clusterID = self.__labelMap[index]
-        #     value = self.__obs[index]
-        #
-        #     self.__clusterMeans[clusterID] += value
-        #     self.__clusterNums[clusterID] += 1
-        #
-        # # if any value is zero --> empty cluster
-        # if not np.all(self.__clusterNums):
-        #     print('[WARNING]:\t At least one empty cluster discovered in your data. Please run the algorithm again.')
-        #
-        # # divide means by number in clusters (--> compute average / centroid)
-        # for ii in range(self.__k):
-        #     # if number of cluster > 0
-        #     if self.__clusterNums[ii]:
-        #         # compute new centroid
-        #         self.__clusterMeans[ii] /= self.__clusterNums[ii]
-
     # ------------------------------------------------------------------------------------------------------------------
 
     def __end(self):
@@ -269,12 +251,8 @@ class KMeans:
         self.__centroids = np.array([self.__obs[0] for _ in range(self.__k)], dtype=np.float)
         # labels of observations
         self.__labels = np.array([0 for _ in range(self.__n)], dtype=np.int)
-        # labels per centroid
-        self.__clusterLabels = [[] for _ in range(self.__k)]
-        # distances of obs to their cluster
-        self.__centroidDists = [[] for _ in range(self.__k)]
         # distances between centroids
-        self.__centroidDistMat = np.zeros((self.__k, self.__k))
+        # self.__centroidDistMat = np.zeros((self.__k, self.__k))
 
         # we do not use OrderedDict here, so obtain dict.values and fill array manually
         for index in range(self.__n):
@@ -287,14 +265,14 @@ class KMeans:
             self.__centroids[ii] = self.__clusterMeans[ii]
 
         # compute distances between each centroids
-        for ii in range(self.__k - 1):
-            # compute indices of other clusters
-            jj = range(ii + 1, self.__k)
-            # select matrix of cluster centroids
-            centroidMat = self.__centroids[jj]
-            distances = np.sqrt(self.__compare(centroidMat, self.__centroids[ii]))
-            self.__centroidDistMat[ii, jj] = distances
-            self.__centroidDistMat[jj, ii] = distances
+        # for ii in range(self.__k - 1):
+        #     # compute indices of other clusters
+        #     jj = range(ii + 1, self.__k)
+        #     # select matrix of cluster centroids
+        #     centroidMat = self.__centroids[jj]
+        #     distances = np.sqrt(self.__compare(centroidMat, self.__centroids[ii]))
+        #     self.__centroidDistMat[ii, jj] = distances
+        #     self.__centroidDistMat[jj, ii] = distances
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -323,7 +301,8 @@ class KMeans:
 
         # write results to the class members
         self.__end()
-        return self.__centroids.tolist(), self.__labels.tolist(), self.__centroidDistMat.tolist()
+        return self.__centroids.tolist(), self.__labels.tolist()
+        #, self.__centroidDistMat.tolist()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -334,10 +313,10 @@ class KMeans:
         :return: array of distance arrays for each cluster and ordered labels
         """
 
-        # fill labels per centroid
-        for index in range(self.__n):
-            clusterID = self.__labels[index]
-            self.__clusterLabels[clusterID].append(int(index))
+        # labels per centroid
+        # self.__clusterLabels = [[] for _ in range(self.__k)]
+        # distances of obs to their cluster
+        self.__centroidDists = [[] for _ in range(self.__k)]
 
         for ii in range(self.__k):
             self.__clusterLabels[ii] = np.array(self.__clusterLabels[ii], dtype=np.int)

@@ -60,7 +60,7 @@ def runKMeans(data, k, initMethod):
     # data = data.T
     KMeans = loadPlugin('caleydo-clustering-kmeans', data, k, initMethod)
     # and run the kmeans extension
-    centroids, labels, centroidDistMatrix = KMeans()
+    centroids, labels = KMeans()
     clusterLabels, clusterDists = KMeans.getDistsPerCentroid()
 
     return {'centroids': centroids, 'clusterLabels': clusterLabels, 'clusterDistances': clusterDists}
