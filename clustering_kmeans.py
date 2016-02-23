@@ -8,7 +8,7 @@ __email__ = 'kernm@in.tum.de'
 # module to load own configurations
 import caleydo_server.config
 # request config if needed in the future
-config = caleydo_server.config.view('gene_clustering')
+config = caleydo_server.config.view('caleydo-clustering')
 
 # numpy important to conduct matrix/vector calculus
 import numpy as np
@@ -16,7 +16,7 @@ import numpy as np
 import random
 
 # contains utility functions
-from gene_clustering_util import weightedChoice, squaredEuclideanDistance, computeClusterInternDistances
+from clustering_util import weightedChoice, squaredEuclideanDistance, computeClusterInternDistances
 
 ########################################################################################################################
 

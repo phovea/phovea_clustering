@@ -30,7 +30,7 @@
           "type": "namespace",
           "id": "caleydo-clustering",
           "file": "caleydo_clustering_api",
-          "namespace": "/api/caleydo_clustering"
+          "namespace": "/api/clustering"
         }
       ]
     }

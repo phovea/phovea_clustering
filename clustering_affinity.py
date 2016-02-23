@@ -8,10 +8,10 @@ __email__ = 'kernm@in.tum.de'
 # module to load own configurations
 import caleydo_server.config
 # request config if needed for the future
-config = caleydo_server.config.view('gene_clustering')
+config = caleydo_server.config.view('caleydo-clustering')
 
 import numpy as np
-from gene_clustering_util import squaredEuclideanDistanceMatrix, computeClusterInternDistances
+from clustering_util import squaredEuclideanDistanceMatrix, computeClusterInternDistances
 from timeit import default_timer as timer
 
 ########################################################################################################################

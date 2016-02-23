@@ -8,7 +8,7 @@ __email__ = 'kernm@in.tum.de'
 # module to load own configurations
 import caleydo_server.config
 # request config if needed for the future
-config = caleydo_server.config.view('gene_clustering')
+config = caleydo_server.config.view('caleydo-clustering')
 
 # library to conduct matrix/vector calculus
 import numpy as np
@@ -16,7 +16,7 @@ import numpy as np
 import scipy.spatial as spt
 
 # utility functions for clustering and creating the dendrogram trees
-from gene_clustering_util import BinaryNode, BinaryTree, squaredEuclideanDistanceMatrix
+from clustering_util import BinaryNode, BinaryTree, squaredEuclideanDistanceMatrix
 
 ########################################################################################################################
 

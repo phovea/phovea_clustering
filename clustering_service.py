@@ -35,7 +35,7 @@ def loadPlugin(pluginID, *args, **kwargs):
     """
     import caleydo_server.plugin
     # obtain all plugins with 'pluginID' extension
-    plugins = caleydo_server.plugin.list(pluginID)
+    plugins = caleydo_server.plugin.list('clustering')
     # choose first plugin
     plugin = plugins[0]
     # load the implementation of the plugin
@@ -54,7 +54,7 @@ def runKMeans(data, k, initMethod):
     """
     # transpose matrix to cluster patients
     # data = data.T
-    KMeans = loadPlugin('gene_clustering_kmeans-type', data, k, initMethod)
+    KMeans = loadPlugin('caleydo-clustering-kmeans', data, k, initMethod)
     # and run the kmeans extension
     centroids, labels, centroidDistMatrix = KMeans()
     clusterLabels, clusterDists = KMeans.getDistsPerCentroid()
@@ -70,7 +70,7 @@ def runHierarchical(data, method):
     :param method: linkage method
     :return: linkage matrix / dendrogram of the algorithm
     """
-    Hierarchical = loadPlugin('gene_clustering_hierarchical-type', data, method)
+    Hierarchical = loadPlugin('caleydo-clustering-hierarchical', data, method)
     # and use the extension
     linkage = Hierarchical()
     print('\t-> creating dendrogram tree...')
@@ -93,7 +93,7 @@ def runAffinityPropagation(data, damping, factor, preference):
     :param preference:
     :return:
     """
-    Affinity = loadPlugin('gene_clustering_affinity-type', data, damping, factor, preference)
+    Affinity = loadPlugin('caleydo-clustering-affinity', data, damping, factor, preference)
     # use this extension
     centroids, labels, clusterLabels = Affinity()
 
@@ -109,7 +109,7 @@ def getClusterDistances(data, labels, externLabels = None):
     :param externLabels:
     :return: labels and distances values sorted in ascending order
     """
-    from gene_clustering_util import computeClusterInternDistances, computeClusterExternDistances
+    from clustering_util import computeClusterInternDistances, computeClusterExternDistances
     distLabels, distValues = computeClusterInternDistances(data, labels)
 
     if externLabels is not None:

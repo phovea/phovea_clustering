@@ -8,7 +8,7 @@ __email__ = 'kernm@in.tum.de'
 # use flask library for server activities
 import flask
 # load services (that are executed by the server when certain website is called)
-from .gene_clustering_service import *
+from clustering_service import *
 
 # create new flask application for hosting namespace
 app = flask.Flask(__name__)
