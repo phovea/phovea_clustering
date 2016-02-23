@@ -36,10 +36,14 @@ def loadPlugin(pluginID, *args, **kwargs):
     import caleydo_server.plugin
     # obtain all plugins with 'pluginID' extension
     plugins = caleydo_server.plugin.list('clustering')
-    # choose first plugin
-    plugin = plugins[0]
-    # load the implementation of the plugin
-    return plugin.load().factory(*args, **kwargs)
+    # choose plugin with given ID
+    for plugin in plugins:
+        if plugin.id == pluginID:
+            # load the implementation of the plugin
+            return plugin.load().factory(*args, **kwargs)
+
+    raise NotImplementedError
+
 
 ########################################################################################################################
 

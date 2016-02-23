@@ -29,7 +29,7 @@
         {
           "type": "namespace",
           "id": "caleydo-clustering",
-          "file": "caleydo_clustering_api",
+          "file": "clustering_api",
           "namespace": "/api/clustering"
         }
       ]
