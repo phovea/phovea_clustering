@@ -1,0 +1,41 @@
+{
+  "name": "gene_clustering",
+  "version": "1.0.0",
+  "license" : "SEE LICENSE IN LICENSE",
+  "repository": "Caleydo/caleydo_clustering",
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "caleydo_server": "*"
+  },
+  "caleydo": {
+    "plugins": {
+      "python": [
+        {
+          "type": "clustering",
+          "id": "caleydo-clustering-kmeans",
+          "file": "clustering_kmeans"
+        },
+        {
+          "type": "clustering",
+          "id": "caleydo-clustering-hierarchical",
+          "file": "clustering_hierarchical"
+        },
+        {
+          "type": "clustering",
+          "id": "caleydo-clustering-affinity",
+          "file": "clustering_affinity"
+        },
+        {
+          "type": "namespace",
+          "id": "caleydo-clustering",
+          "file": "caleydo_clustering_api",
+          "namespace": "/api/caleydo_clustering"
+        }
+      ]
+    }
+  },
+  "publishConfig": {
+    "registry": "http://registry.caleydo.org/"
+  }
+}
