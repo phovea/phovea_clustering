@@ -35,7 +35,9 @@ class Hierarchical(object):
         :return:
         """
         # genomic data / matrix
-        self.__obs = np.array(obs)
+        # observations, can be 1D array or 2D matrix with genes as rows and conditions as columns
+        # remove all NaNs in data
+        self.__obs = np.nan_to_num(obs)
 
         # check if dimension is 2D
         if self.__obs.ndim == 2:
@@ -64,6 +66,9 @@ class Hierarchical(object):
 
         # linkage method for hierarchical clustering
         self.__method = method
+
+        # internal dendrogram tree
+        self.__tree = None
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -283,6 +288,8 @@ class Hierarchical(object):
 
         # reset number n to length of first dimension (number of genes)
         self.__n, _ = np.shape(self.__obs)
+
+        self.__tree = self.generateTree(Z)
         return Z.tolist()
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -293,6 +300,8 @@ class Hierarchical(object):
         :param linkageMatrix:
         :return:
         """
+        self.__tree = None
+
         treeMap = {}
         numTrees = len(linkageMatrix)
 
@@ -325,7 +334,28 @@ class Hierarchical(object):
                 del treeMap[rightIndex]
                 del treeMap[leftIndex]
 
-        return treeMap[numTrees + self.__n - 1]
+        self.__tree = treeMap[numTrees + self.__n - 1]
+        return self.__tree
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def getClusters(self, k):
+        clusters = self.__tree.cutTreeByClusters(k)
+
+        clusterCentroids = []
+        clusterLabels = np.zeros(self.__n, dtype=np.int)
+        clusterID = 0
+
+        for cluster in clusters:
+            obs = self.__obs[cluster]
+            clusterCentroids.append(np.mean(obs, axis=0).tolist())
+
+            for id in cluster:
+                clusterLabels[id] = clusterID
+
+            clusterID += 1
+
+        return clusterCentroids, clusters, clusterLabels.tolist()
 
 ########################################################################################################################
 
@@ -352,30 +382,30 @@ from scipy.cluster.hierarchy import linkage, leaves_list
 
 if __name__ == '__main__':
     np.random.seed(200)
-    # data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+    data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
 
     timeMine = 0
     timeTheirs = 0
-    n = 10
+    n = 1
 
     for i in range(n):
-        data = np.array([np.random.rand(6000) * 4 - 2 for _ in range(249)])
+        # data = np.array([np.random.rand(6000) * 4 - 2 for _ in range(249)])
         # import time
         s1 = timer()
-        hier = Hierarchical(data, 'single')
+        hier = Hierarchical(data, 'complete')
         # s = time.time()
         linkageMatrix = hier.run()
         e1 = timer()
         # print(linkageMatrix)
-        # tree = hier.generateTree(linkageMatrix)
-
-        # print(tree.getLeaves())
+        tree = hier.generateTree(linkageMatrix)
+        print(tree.getLeaves())
         # print(tree.jsonify())
+        # print(hier.getClusters(3))
 
 
         s2 = timer()
-        linkageMatrix2 = linkage(data, 'single')
-        # print(leaves_list(linkageMatrix2))
+        linkageMatrix2 = linkage(data, 'complete')
+        print(leaves_list(linkageMatrix2))
         e2 = timer()
 
         timeMine += e1 - s1

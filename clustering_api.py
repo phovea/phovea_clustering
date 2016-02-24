@@ -33,17 +33,21 @@ def kmeansClustering(k, initMethod, datasetID):
 
 ########################################################################################################################
 
-@app.route('/hierarchical/<method>/<datasetID>')
-def singleLinkageClustering(method, datasetID):
+@app.route('/hierarchical/<k>/<method>/<datasetID>')
+def hierarchicalClustering(k, method, datasetID):
     """
     Access hierarchical clustering plugin.
+    :param k: number of desired clusters
     :param method: type of single linkage
     :param datasetID: indentifier of data set
     :return: jsonified output
     """
-    data = loadData(datasetID)
-    response = runHierarchical(data, method)
-    return flask.jsonify(response)
+    try:
+        data = loadData(datasetID)
+        response = runHierarchical(data, k, method)
+        return flask.jsonify(response)
+    except:
+        return flask.jsonify({})
 
 ########################################################################################################################
 

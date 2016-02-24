@@ -56,8 +56,6 @@ def runKMeans(data, k, initMethod):
     :param initMethod: number of clusters
     :return: result of k-means
     """
-    # transpose matrix to cluster patients
-    # data = data.T
     KMeans = loadPlugin('caleydo-clustering-kmeans', data, k, initMethod)
     # and run the kmeans extension
     centroids, labels = KMeans()
@@ -67,7 +65,7 @@ def runKMeans(data, k, initMethod):
 
 ########################################################################################################################
 
-def runHierarchical(data, method):
+def runHierarchical(data, k, method):
     """
     Runs the hierarchical clustering algorithm given the loaded data set and type of linkage method.
     :param data: observation matrix
@@ -76,14 +74,18 @@ def runHierarchical(data, method):
     """
     Hierarchical = loadPlugin('caleydo-clustering-hierarchical', data, method)
     # and use the extension
-    linkage = Hierarchical()
-    print('\t-> creating dendrogram tree...')
-    tree = Hierarchical.generateTree(linkage)
-    print('\t-> creating json string ...')
-    dendrogram = tree.jsonify()
-    print('\t-> finished.')
+    Hierarchical()
+    # obtain k-number of clusters
+    centroids, clusterLabels, labels = Hierarchical.getClusters(k)
 
-    return {'dendrogram': dendrogram}
+    return {'centroids': centroids, 'clusterLabels': clusterLabels}
+    # print('\t-> creating dendrogram tree...')
+    # tree = Hierarchical.generateTree(linkage)
+    # print('\t-> creating json string ...')
+    # dendrogram = tree.jsonify()
+    # print('\t-> finished.')
+
+    # return {'dendrogram': dendrogram} --> if needed later
 
 ########################################################################################################################
 

@@ -34,7 +34,9 @@ class AffinityPropagation:
         :return:
         """
         self.__n, _ = np.shape(obs)
-        self.__obs = obs
+        # observations, can be 1D array or 2D matrix with genes as rows and conditions as columns
+        # remove all NaNs in data
+        self.__obs = np.nan_to_num(obs)
         # variables influencing output of clustering algorithm
         self.__damping = damping
         self.__factor = factor

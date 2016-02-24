@@ -42,12 +42,18 @@ class BinaryNode:
         self.size = size
         self.id = id
         self.parent = None
+        self.indices = [id]
 
         # create json info on the fly
         self.json = {"id": self.id, "size": self.size, "value": self.value}
         if leftChild is not None and rightChild is not None:
             self.json["value"] = np.mean(self.value)
             self.json["children"] = [leftChild.json, rightChild.json]
+            self.indices = [] + rightChild.indices + leftChild.indices
+            self.json["indices"] = self.indices
+
+    def isLeave(self):
+        return self.left is None and self.right is None
 
 ########################################################################################################################
 
@@ -73,6 +79,31 @@ class BinaryTree:
         # return self.root.json
         # return self.__traverseJson(self.root)
 
+    def cutTreeByClusters(self, k):
+        queue = [self.root]
+
+        while len(queue) < k:
+            node = queue.pop(0)
+            queue.append(node.left)
+            queue.append(node.right)
+
+            def keyFunc(x):
+                if x.isLeave():
+                    return 0
+                else:
+                    return -x.value
+
+            queue.sort(key=keyFunc)
+
+        clusters = []
+
+        for node in queue:
+            clusters.append(node.indices)
+
+        return clusters
+
+
+
     def __traverseJson(self, node):
         json = {"id": node.id, "size": node.size, "value": node.value}
         if node.left is None and node.right is None:
@@ -83,7 +114,8 @@ class BinaryTree:
         return json
 
     def getLeaves(self):
-        return self.__traverseIDs(self.root)
+        return self.root.indices
+        # return self.__traverseIDs(self.root)
 
     def __traverseIDs(self, node):
 
