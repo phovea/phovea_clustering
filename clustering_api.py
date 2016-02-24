@@ -44,7 +44,7 @@ def hierarchicalClustering(k, method, datasetID):
     """
     try:
         data = loadData(datasetID)
-        response = runHierarchical(data, k, method)
+        response = runHierarchical(data, int(k), method)
         return flask.jsonify(response)
     except:
         return flask.jsonify({})

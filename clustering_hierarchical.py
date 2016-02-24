@@ -16,7 +16,7 @@ import numpy as np
 import scipy.spatial as spt
 
 # utility functions for clustering and creating the dendrogram trees
-from clustering_util import BinaryNode, BinaryTree, squaredEuclideanDistanceMatrix
+from clustering_util import BinaryNode, BinaryTree, squaredEuclideanDistanceMatrix, computeClusterInternDistances
 
 ########################################################################################################################
 
@@ -340,22 +340,32 @@ class Hierarchical(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     def getClusters(self, k):
-        clusters = self.__tree.cutTreeByClusters(k)
+        """
+        First implementation to cut dendrogram tree automatically by choosing nodes having the greatest node values
+        or rather distance to the other node / potential cluster
+        :param k: number of desired clusters
+        :return: centroids, sorted cluster labels and normal label list
+        """
+        clusterLabels = self.__tree.cutTreeByClusters(k)
 
         clusterCentroids = []
-        clusterLabels = np.zeros(self.__n, dtype=np.int)
+        labels = np.zeros(self.__n, dtype=np.int)
         clusterID = 0
 
-        for cluster in clusters:
+        for ii in range(len(clusterLabels)):
+            cluster = clusterLabels[ii]
             obs = self.__obs[cluster]
             clusterCentroids.append(np.mean(obs, axis=0).tolist())
 
             for id in cluster:
-                clusterLabels[id] = clusterID
+                labels[id] = clusterID
+
+            # sort labels according to their distance
+            clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, cluster)
 
             clusterID += 1
 
-        return clusterCentroids, clusters, clusterLabels.tolist()
+        return clusterCentroids, clusterLabels, labels.tolist()
 
 ########################################################################################################################
 
