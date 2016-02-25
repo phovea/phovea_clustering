@@ -281,7 +281,7 @@ def similarityMeasurement(matrix, method):
         return squaredEuclideanDistanceMatrix(matrix)
         # return squareform(pdist(matrix, method))
 
-    spatialMethods = ['cityblock', 'chebyshev', 'canbrerra', 'correlation', 'hamming', 'mahalanobis', 'correlation']
+    spatialMethods = ['cityblock', 'chebyshev', 'canberra', 'correlation', 'hamming', 'mahalanobis', 'correlation']
 
     if method in spatialMethods:
         return squareform(pdist(matrix, method))
