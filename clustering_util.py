@@ -5,7 +5,6 @@ __email__ = 'kernm@in.tum.de'
 
 import random
 import numpy as np
-from scipy.stats import pearsonr, spearmanr
 
 """
 http://eli.thegreenplace.net/2010/01/22/weighted-random-generation-in-python
@@ -158,7 +157,7 @@ def euclideanDistance(matrix, vector):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def squaredEuclideanDistanceMatrix(matrix, n):
+def squaredEuclideanDistanceMatrix(matrix):
     """
     Compute the euclidean distance matrix required for the algorithm
     :param matrix:
@@ -166,6 +165,7 @@ def squaredEuclideanDistanceMatrix(matrix, n):
     :return:
     """
 
+    n, _ = np.shape(matrix)
     distMat = np.zeros((n, n))
 
     # use Gram matrix and compute distances without inner products | FASTER than row-by-row method
@@ -198,8 +198,8 @@ def squaredEuclideanDistanceMatrix(matrix, n):
     return distMat
 
 
-def euclideanDistanceMatrix(matrix, n):
-    return np.sqrt(squaredEuclideanDistanceMatrix(matrix, n))
+def euclideanDistanceMatrix(matrix):
+    return np.sqrt(squaredEuclideanDistanceMatrix(matrix))
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -218,62 +218,81 @@ def norm1Distance(matrix, vector):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-"""
-Computes the mahalanobis distance between a vector and the rows of a matrix in parallel.
-"""
-# TODO! implement method or provide generic distance function
-def mahalanobisDistance(matrix, vector):
-    pass
-
-# ----------------------------------------------------------------------------------------------------------------------
-
-def pearsonCorrelationMatrix(matrix, n):
+def pearsonCorrelationMatrix(matrix):
     """
 
     :param matrix:
     :param n:
     :return:
     """
-    # distMat = np.zeros((n, n))
-    #
-    # for ii in range(n):
-    #     rowI = matrix[ii]
-    #     for jj in range(ii + 1, n):
-    #         rowJ = matrix[jj]
-    #         pcc, _ = pearsonr(rowI, rowJ)
-    #         # TODO! other possibilites like 1 - abs(corr) | sqrt(1 - corr ** 2) | (1 - corr) / 2
-    #         corr = 1 - pcc
-    #
-    #         distMat[ii, jj] = corr
-    #         distMat[jj, ii] = corr
-
+    # TODO! other possibilites like 1 - abs(corr) | sqrt(1 - corr ** 2) | (1 - corr) / 2
     distMat = 1 - np.corrcoef(matrix)
 
     return distMat
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def spearmanCorrelationMatrix(matrix, n):
-    """
+import scipy.stats as stats
 
-    :param matrix:
-    :param n:
-    :return:
-    """
+def statsCorrelationMatrix(matrix, method):
+    if method == 'pearson':
+        return pearsonCorrelationMatrix(matrix)
+
+    n, _ = np.shape(matrix)
     distMat = np.zeros((n, n))
 
     for ii in range(n):
         rowI = matrix[ii]
         for jj in range(ii + 1, n):
             rowJ = matrix[jj]
-            pcc, _ = spearmanr(rowI, rowJ)
+            corr = 0
+
+            if method == 'spearman':
+                corr, _ = stats.spearmanr(rowI, rowJ)
+
+            if method == 'kendall':
+                corr, _ = stats.kendalltau(rowI, rowJ)
+
             # TODO! other possibilites like 1 - abs(corr) | sqrt(1 - corr ** 2) | (1 - corr) / 2
-            corr = 1 - pcc
+            corr = 1 - corr
 
             distMat[ii, jj] = corr
             distMat[jj, ii] = corr
 
     return distMat
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+# use scipy to compute different distance matrices
+from scipy.spatial.distance import pdist, squareform
+
+def similarityMeasurement(matrix, method):
+    """
+    Generic function to determine the similarity measurement for clustering
+    :param matrix:
+    :param method:
+    :return:
+    """
+    if method == 'euclidean':
+        return euclideanDistanceMatrix(matrix)
+        # return squareform(pdist(matrix, method))
+
+    if method == 'sqeuclidean':
+        return squaredEuclideanDistanceMatrix(matrix)
+        # return squareform(pdist(matrix, method))
+
+    spatialMethods = ['cityblock', 'chebyshev', 'canbrerra', 'correlation', 'hamming', 'mahalanobis', 'correlation']
+
+    if method in spatialMethods:
+        return squareform(pdist(matrix, method))
+
+    corrMethods = ['spearman', 'pearson', 'kendall']
+
+    if method in corrMethods:
+        return statsCorrelationMatrix(matrix, method)
+
+    raise AttributeError
+
 
 ########################################################################################################################
 # utility functions to compute distances between rows and cluster centroids

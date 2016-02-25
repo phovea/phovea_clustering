@@ -17,7 +17,7 @@ import scipy.spatial as spt
 
 # utility functions for clustering and creating the dendrogram trees
 from clustering_util import BinaryNode, BinaryTree
-from clustering_util import euclideanDistanceMatrix, pearsonCorrelationMatrix, spearmanCorrelationMatrix
+from clustering_util import similarityMeasurement
 from clustering_util import computeClusterInternDistances
 
 ########################################################################################################################
@@ -29,7 +29,7 @@ class Hierarchical(object):
     Lance-Williams explained in: http://arxiv.org/pdf/1105.0121.pdf
     """
 
-    def __init__(self, obs, method='single', similarity=pearsonCorrelationMatrix):
+    def __init__(self, obs, method='single', distance='euclidean'):
         """
         Initializes the algorithm
         :param obs: genomic data / matrix
@@ -52,7 +52,7 @@ class Hierarchical(object):
             raise AttributeError
 
         # distance measurement
-        self.__similarity = similarity
+        self.__distance = distance
 
         # distance / proximity matrix
         self.__d = []
@@ -144,7 +144,7 @@ class Hierarchical(object):
         # compute euclidean distance
         # TODO! implement generic distance functions
         # TODO! look for an alternative proximity analysis without computing all distances
-        self.__d = self.__similarity(self.__obs, self.__n)
+        self.__d = similarityMeasurement(self.__obs, self.__distance)
 
         # get number of maximum value of float
         self.__maxValue = self.__d.max() + 1
@@ -401,7 +401,9 @@ if __name__ == '__main__':
 
     timeMine = 0
     timeTheirs = 0
-    n = 1
+
+
+    n = 10
 
     for i in range(n):
         data = np.array([np.random.rand(6000) * 4 - 2 for _ in range(249)])
