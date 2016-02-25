@@ -16,7 +16,9 @@ import numpy as np
 import scipy.spatial as spt
 
 # utility functions for clustering and creating the dendrogram trees
-from clustering_util import BinaryNode, BinaryTree, squaredEuclideanDistanceMatrix, computeClusterInternDistances
+from clustering_util import BinaryNode, BinaryTree
+from clustering_util import euclideanDistanceMatrix, pearsonCorrelationMatrix, spearmanCorrelationMatrix
+from clustering_util import computeClusterInternDistances
 
 ########################################################################################################################
 
@@ -27,7 +29,7 @@ class Hierarchical(object):
     Lance-Williams explained in: http://arxiv.org/pdf/1105.0121.pdf
     """
 
-    def __init__(self, obs, method='single'):
+    def __init__(self, obs, method='single', similarity=pearsonCorrelationMatrix):
         """
         Initializes the algorithm
         :param obs: genomic data / matrix
@@ -48,6 +50,9 @@ class Hierarchical(object):
         else:
             print("[Error]:\tdata / observations must be 2D. 1D observation arrays are not supported")
             raise AttributeError
+
+        # distance measurement
+        self.__similarity = similarity
 
         # distance / proximity matrix
         self.__d = []
@@ -139,7 +144,7 @@ class Hierarchical(object):
         # compute euclidean distance
         # TODO! implement generic distance functions
         # TODO! look for an alternative proximity analysis without computing all distances
-        self.__d = np.sqrt(squaredEuclideanDistanceMatrix(self.__obs, self.__n))
+        self.__d = self.__similarity(self.__obs, self.__n)
 
         # get number of maximum value of float
         self.__maxValue = self.__d.max() + 1
@@ -392,14 +397,14 @@ from scipy.cluster.hierarchy import linkage, leaves_list
 
 if __name__ == '__main__':
     np.random.seed(200)
-    data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+    # data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
 
     timeMine = 0
     timeTheirs = 0
     n = 1
 
     for i in range(n):
-        # data = np.array([np.random.rand(6000) * 4 - 2 for _ in range(249)])
+        data = np.array([np.random.rand(6000) * 4 - 2 for _ in range(249)])
         # import time
         s1 = timer()
         hier = Hierarchical(data, 'complete')
@@ -408,14 +413,14 @@ if __name__ == '__main__':
         e1 = timer()
         # print(linkageMatrix)
         tree = hier.generateTree(linkageMatrix)
-        print(tree.getLeaves())
+        # print(tree.getLeaves())
         # print(tree.jsonify())
         # print(hier.getClusters(3))
 
 
         s2 = timer()
         linkageMatrix2 = linkage(data, 'complete')
-        print(leaves_list(linkageMatrix2))
+        # print(leaves_list(linkageMatrix2))
         e2 = timer()
 
         timeMine += e1 - s1

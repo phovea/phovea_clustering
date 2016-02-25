@@ -5,6 +5,7 @@ __email__ = 'kernm@in.tum.de'
 
 import random
 import numpy as np
+from scipy.stats import pearsonr, spearmanr
 
 """
 http://eli.thegreenplace.net/2010/01/22/weighted-random-generation-in-python
@@ -196,6 +197,10 @@ def squaredEuclideanDistanceMatrix(matrix, n):
 
     return distMat
 
+
+def euclideanDistanceMatrix(matrix, n):
+    return np.sqrt(squaredEuclideanDistanceMatrix(matrix, n))
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 def norm1Distance(matrix, vector):
@@ -219,6 +224,54 @@ Computes the mahalanobis distance between a vector and the rows of a matrix in p
 # TODO! implement method or provide generic distance function
 def mahalanobisDistance(matrix, vector):
     pass
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+def pearsonCorrelationMatrix(matrix, n):
+    """
+
+    :param matrix:
+    :param n:
+    :return:
+    """
+    distMat = np.zeros((n, n))
+
+    for ii in range(n):
+        rowI = matrix[ii]
+        for jj in range(ii + 1, n):
+            rowJ = matrix[jj]
+            pcc, _ = pearsonr(rowI, rowJ)
+            # TODO! other possibilites like 1 - abs(corr) | sqrt(1 - corr ** 2) | (1 - corr) / 2
+            corr = 1 - pcc
+
+            distMat[ii, jj] = corr
+            distMat[jj, ii] = corr
+
+    return distMat
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+def spearmanCorrelationMatrix(matrix, n):
+    """
+
+    :param matrix:
+    :param n:
+    :return:
+    """
+    distMat = np.zeros((n, n))
+
+    for ii in range(n):
+        rowI = matrix[ii]
+        for jj in range(ii + 1, n):
+            rowJ = matrix[jj]
+            pcc, _ = spearmanr(rowI, rowJ)
+            # TODO! other possibilites like 1 - abs(corr) | sqrt(1 - corr ** 2) | (1 - corr) / 2
+            corr = 1 - pcc
+
+            distMat[ii, jj] = corr
+            distMat[jj, ii] = corr
+
+    return distMat
 
 ########################################################################################################################
 # utility functions to compute distances between rows and cluster centroids
