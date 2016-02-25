@@ -234,18 +234,20 @@ def pearsonCorrelationMatrix(matrix, n):
     :param n:
     :return:
     """
-    distMat = np.zeros((n, n))
+    # distMat = np.zeros((n, n))
+    #
+    # for ii in range(n):
+    #     rowI = matrix[ii]
+    #     for jj in range(ii + 1, n):
+    #         rowJ = matrix[jj]
+    #         pcc, _ = pearsonr(rowI, rowJ)
+    #         # TODO! other possibilites like 1 - abs(corr) | sqrt(1 - corr ** 2) | (1 - corr) / 2
+    #         corr = 1 - pcc
+    #
+    #         distMat[ii, jj] = corr
+    #         distMat[jj, ii] = corr
 
-    for ii in range(n):
-        rowI = matrix[ii]
-        for jj in range(ii + 1, n):
-            rowJ = matrix[jj]
-            pcc, _ = pearsonr(rowI, rowJ)
-            # TODO! other possibilites like 1 - abs(corr) | sqrt(1 - corr ** 2) | (1 - corr) / 2
-            corr = 1 - pcc
-
-            distMat[ii, jj] = corr
-            distMat[jj, ii] = corr
+    distMat = 1 - np.corrcoef(matrix)
 
     return distMat
 

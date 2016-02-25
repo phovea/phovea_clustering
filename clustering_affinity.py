@@ -11,7 +11,8 @@ import caleydo_server.config
 config = caleydo_server.config.view('caleydo-clustering')
 
 import numpy as np
-from clustering_util import squaredEuclideanDistanceMatrix, computeClusterInternDistances
+from clustering_util import euclideanDistanceMatrix, pearsonCorrelationMatrix, spearmanCorrelationMatrix
+from clustering_util import computeClusterInternDistances
 from timeit import default_timer as timer
 
 ########################################################################################################################
@@ -24,7 +25,7 @@ class AffinityPropagation:
     Returns the centroids and labels / stratification of each row belonging to one cluster.
     """
 
-    def __init__(self, obs, damping=0.5, factor=1.0, prefMethod='minimum'):
+    def __init__(self, obs, damping=0.5, factor=1.0, prefMethod='minimum', similarity=pearsonCorrelationMatrix):
         """
         Initializes the algorithm.
         :param obs: genomic data / matrix
@@ -56,6 +57,9 @@ class AffinityPropagation:
 
         self.__idx = np.zeros(self.__n)
 
+        # set similarity computation
+        self.__similarity = similarity
+
         self.__computeSimilarity()
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -74,7 +78,7 @@ class AffinityPropagation:
         :return: Similarity matrix
         """
         # compute distance matrix containing the negative sq euclidean distances -|| xi - xj ||**2
-        self.__S = -squaredEuclideanDistanceMatrix(self.__obs, self.__n)
+        self.__S = -self.__similarity(self.__obs, self.__n)
 
         # determine the preferences S(k,k) to control the output of clusters
         pref = 0
