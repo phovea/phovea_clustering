@@ -70,6 +70,23 @@ def affinityPropagationClustering(damping, factor, preference, datasetID):
 
 ########################################################################################################################
 
+@app.route('/fuzzy/<numClusters>/<m>/<datasetID>')
+def fuzzyClustering(numClusters, m, datasetID):
+    """
+    :param numClusters:
+    :param m:
+    :param datasetID:
+    :return:
+    """
+    try:
+        data = loadData(datasetID)
+        response = runFuzzy(data, int(numClusters), int(m))
+        return flask.jsonify(response)
+    except:
+        return flask.jsonify({})
+
+########################################################################################################################
+
 def loadAttribute(jsonData, attr):
     import json
     data = json.loads(jsonData)
@@ -77,6 +94,8 @@ def loadAttribute(jsonData, attr):
         return data[attr]
     else:
         return None
+
+########################################################################################################################
 
 @app.route('/distances/<datasetID>', methods=['POST'])
 def getDistances(datasetID):

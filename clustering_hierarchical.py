@@ -396,6 +396,25 @@ from timeit import default_timer as timer
 from scipy.cluster.hierarchy import linkage, leaves_list
 
 if __name__ == '__main__':
+
+    from scipy.spatial.distance import cdist
+
+    a = np.array([[1,2,3], [4,5,6]])
+    b = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+
+    c = cdist(b, a)
+
+    from clustering_util import euclideanDistance
+
+    d = np.zeros((2, 6))
+    for ii in range(2):
+        d[ii] = euclideanDistance(b, a[ii])
+
+    d = np.fmax(d, np.finfo(np.float64).eps)
+
+    u = d ** (-2.)
+    u /= np.ones((2, 1)).dot(np.atleast_2d(np.sum(u, axis=0)))
+
     np.random.seed(200)
     # data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
 

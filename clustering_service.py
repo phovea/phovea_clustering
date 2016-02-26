@@ -107,6 +107,15 @@ def runAffinityPropagation(data, damping, factor, preference):
 
 ########################################################################################################################
 
+def runFuzzy(data, numClusters, m):
+    Fuzzy = loadPlugin('caleydo-clustering-fuzzy', data, numClusters, m)
+
+    centroids, clusterLabels = Fuzzy()
+
+    return {'centroids': centroids, 'clusterLabels': clusterLabels}
+
+########################################################################################################################
+
 def getClusterDistances(data, labels, externLabels = None):
     """
     Compute the cluster distances in a given data among certain rows (labels)

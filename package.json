@@ -27,6 +27,11 @@
           "file": "clustering_affinity"
         },
         {
+          "type": "clustering",
+          "id": "caleydo-clustering-fuzzy",
+          "file": "clustering_fuzzy"
+        },
+        {
           "type": "namespace",
           "id": "caleydo-clustering",
           "file": "clustering_api",

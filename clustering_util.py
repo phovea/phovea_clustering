@@ -153,7 +153,7 @@ def squaredEuclideanDistance(matrix, vector):
     return distances
 
 def euclideanDistance(matrix, vector):
-    return np.sqrt(euclideanDistance(matrix, vector))
+    return np.sqrt(squaredEuclideanDistance(matrix, vector))
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -306,6 +306,9 @@ def computeClusterInternDistances(matrix, labels, sorted=True):
     :return: labels / indices of elements corresponding to distance array, distance values of cluster
     """
     clusterLabels = np.array(labels)
+    if len(clusterLabels) == 0:
+        return [], []
+
     subMatrix = matrix[clusterLabels]
     # compute centroid of cluster along column (as we want to average each gene separately)
     centroid = np.mean(subMatrix, axis=0)
@@ -342,6 +345,10 @@ def computeClusterExternDistances(matrix, labels, outerLabels):
     internSubMatrix = matrix[labels]
 
     for externLabels in outerLabels:
+
+        if len(externLabels) == 0:
+            externDists.append([])
+
         # compute centroid of external cluster
         subMatrix = matrix[externLabels]
         centroid = np.mean(subMatrix, axis=0)
