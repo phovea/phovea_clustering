@@ -278,12 +278,12 @@ def _plugin_initialize():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def create(data, damping, factor, preference):
+def create(data, damping, factor, preference, distance):
     """
     by convention contain a factory called create returning the extension implementation
     :return:
     """
-    return AffinityPropagation(data, damping, factor, preference)
+    return AffinityPropagation(data, damping, factor, preference, distance)
 
 ########################################################################################################################
 

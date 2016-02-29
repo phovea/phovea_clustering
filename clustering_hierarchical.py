@@ -383,12 +383,12 @@ def _plugin_initialize():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def create(data, method):
+def create(data, method, distance):
     """
     by convention contain a factory called create returning the extension implementation
     :return:
     """
-    return Hierarchical(data, method)
+    return Hierarchical(data, method, distance)
 
 ########################################################################################################################
 

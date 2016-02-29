@@ -65,14 +65,14 @@ def runKMeans(data, k, initMethod):
 
 ########################################################################################################################
 
-def runHierarchical(data, k, method):
+def runHierarchical(data, k, method, distance):
     """
     Runs the hierarchical clustering algorithm given the loaded data set and type of linkage method.
     :param data: observation matrix
     :param method: linkage method
     :return: linkage matrix / dendrogram of the algorithm
     """
-    Hierarchical = loadPlugin('caleydo-clustering-hierarchical', data, method)
+    Hierarchical = loadPlugin('caleydo-clustering-hierarchical', data, method, distance)
     # and use the extension
     Hierarchical()
     # obtain k-number of clusters
@@ -89,7 +89,7 @@ def runHierarchical(data, k, method):
 
 ########################################################################################################################
 
-def runAffinityPropagation(data, damping, factor, preference):
+def runAffinityPropagation(data, damping, factor, preference, distance):
     """
     Runs the affinity propagation algorithm given the loaded dataset, a damping value, a certain factor and
     a preference method.
@@ -99,7 +99,7 @@ def runAffinityPropagation(data, damping, factor, preference):
     :param preference:
     :return:
     """
-    Affinity = loadPlugin('caleydo-clustering-affinity', data, damping, factor, preference)
+    Affinity = loadPlugin('caleydo-clustering-affinity', data, damping, factor, preference, distance)
     # use this extension
     centroids, labels, clusterLabels = Affinity()
 

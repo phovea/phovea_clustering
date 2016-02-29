@@ -33,37 +33,39 @@ def kmeansClustering(k, initMethod, datasetID):
 
 ########################################################################################################################
 
-@app.route('/hierarchical/<k>/<method>/<datasetID>')
-def hierarchicalClustering(k, method, datasetID):
+@app.route('/hierarchical/<k>/<method>/<distance>/<datasetID>')
+def hierarchicalClustering(k, method, distance, datasetID):
     """
     Access hierarchical clustering plugin.
     :param k: number of desired clusters
     :param method: type of single linkage
-    :param datasetID: indentifier of data set
+    :param distance: distance measurement
+    :param datasetID: identifier of data set
     :return: jsonified output
     """
     try:
         data = loadData(datasetID)
-        response = runHierarchical(data, int(k), method)
+        response = runHierarchical(data, int(k), method, distance)
         return flask.jsonify(response)
     except:
         return flask.jsonify({})
 
 ########################################################################################################################
 
-@app.route('/affinity/<damping>/<factor>/<preference>/<datasetID>')
-def affinityPropagationClustering(damping, factor, preference, datasetID):
+@app.route('/affinity/<damping>/<factor>/<preference>/<distance>/<datasetID>')
+def affinityPropagationClustering(damping, factor, preference, distance, datasetID):
     """
     Access affinity propagation clustering plugin.
     :param damping:
     :param factor:
     :param preference:
+    :param distance: distance measurement
     :param datasetID:
     :return:
     """
     try:
         data = loadData(datasetID)
-        response = runAffinityPropagation(data, float(damping), float(factor), preference)
+        response = runAffinityPropagation(data, float(damping), float(factor), preference, distance)
         return flask.jsonify(response)
     except:
         return flask.jsonify({})
