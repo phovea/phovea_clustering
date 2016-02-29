@@ -86,6 +86,12 @@ class Hierarchical(object):
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    @property
+    def tree(self):
+        return self.__tree
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def __getCoefficients(self, clusterI, clusterJ):
         """
         Compute the coefficients for the Lance-Williams algorithm
@@ -344,33 +350,45 @@ class Hierarchical(object):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def getClusters(self, k):
-        """
-        First implementation to cut dendrogram tree automatically by choosing nodes having the greatest node values
-        or rather distance to the other node / potential cluster
-        :param k: number of desired clusters
-        :return: centroids, sorted cluster labels and normal label list
-        """
-        clusterLabels = self.__tree.cutTreeByClusters(k)
+########################################################################################################################
 
-        clusterCentroids = []
-        labels = np.zeros(self.__n, dtype=np.int)
-        clusterID = 0
+from clustering_util import cutJsonTreeByClusters
 
-        for ii in range(len(clusterLabels)):
-            cluster = clusterLabels[ii]
-            obs = self.__obs[cluster]
-            clusterCentroids.append(np.mean(obs, axis=0).tolist())
+def getClusters(k, obs, dendrogram):
+    """
+    First implementation to cut dendrogram tree automatically by choosing nodes having the greatest node values
+    or rather distance to the other node / potential cluster
+    :param k: number of desired clusters
+    :param obs: set of observations
+    :param dendrogram: dendrogram tree
+    :return: centroids, sorted cluster labels and normal label list
+    """
+    obs = np.nan_to_num(obs)
+    n = obs.shape[0]
 
-            for id in cluster:
-                labels[id] = clusterID
+    if isinstance(dendrogram, BinaryTree):
+        clusterLabels = dendrogram.cutTreeByClusters(k)
+    else:
+        clusterLabels = cutJsonTreeByClusters(dendrogram, k)
 
-            # sort labels according to their distance
-            clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, cluster)
+    clusterCentroids = []
+    labels = np.zeros(n, dtype=np.int)
+    clusterID = 0
 
-            clusterID += 1
+    for ii in range(len(clusterLabels)):
+        cluster = clusterLabels[ii]
+        subObs = obs[cluster]
+        clusterCentroids.append(np.mean(subObs, axis=0).tolist())
 
-        return clusterCentroids, clusterLabels, labels.tolist()
+        for id in cluster:
+            labels[id] = clusterID
+
+        # sort labels according to their distance
+        clusterLabels[ii], _ = computeClusterInternDistances(obs, cluster)
+
+        clusterID += 1
+
+    return clusterCentroids, clusterLabels, labels.tolist()
 
 ########################################################################################################################
 
@@ -397,26 +415,26 @@ from scipy.cluster.hierarchy import linkage, leaves_list
 
 if __name__ == '__main__':
 
-    from scipy.spatial.distance import cdist
-
-    a = np.array([[1,2,3], [4,5,6]])
-    b = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
-
-    c = cdist(b, a)
-
-    from clustering_util import euclideanDistance
-
-    d = np.zeros((2, 6))
-    for ii in range(2):
-        d[ii] = euclideanDistance(b, a[ii])
-
-    d = np.fmax(d, np.finfo(np.float64).eps)
-
-    u = d ** (-2.)
-    u /= np.ones((2, 1)).dot(np.atleast_2d(np.sum(u, axis=0)))
+    # from scipy.spatial.distance import cdist
+    #
+    # a = np.array([[1,2,3], [4,5,6]])
+    # b = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+    #
+    # c = cdist(b, a)
+    #
+    # from clustering_util import euclideanDistance
+    #
+    # d = np.zeros((2, 6))
+    # for ii in range(2):
+    #     d[ii] = euclideanDistance(b, a[ii])
+    #
+    # d = np.fmax(d, np.finfo(np.float64).eps)
+    #
+    # u = d ** (-2.)
+    # u /= np.ones((2, 1)).dot(np.atleast_2d(np.sum(u, axis=0)))
 
     np.random.seed(200)
-    # data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+    data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
 
     timeMine = 0
     timeTheirs = 0
@@ -425,7 +443,7 @@ if __name__ == '__main__':
     n = 10
 
     for i in range(n):
-        data = np.array([np.random.rand(6000) * 4 - 2 for _ in range(249)])
+        # data = np.array([np.random.rand(6000) * 4 - 2 for _ in range(249)])
         # import time
         s1 = timer()
         hier = Hierarchical(data, 'complete')
@@ -437,6 +455,9 @@ if __name__ == '__main__':
         # print(tree.getLeaves())
         # print(tree.jsonify())
         # print(hier.getClusters(3))
+        import json
+        jsonTree = json.loads(tree.jsonify())
+        getClusters(3, data, jsonTree)
 
 
         s2 = timer()

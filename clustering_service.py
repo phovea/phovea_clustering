@@ -3,6 +3,7 @@ __version__ = '0.0.1'
 __email__ = 'kernm@in.tum.de'
 
 import numpy as np
+from clustering_hierarchical import getClusters
 
 ########################################################################################################################
 
@@ -76,9 +77,9 @@ def runHierarchical(data, k, method, distance):
     # and use the extension
     Hierarchical()
     # obtain k-number of clusters
-    centroids, clusterLabels, labels = Hierarchical.getClusters(k)
+    centroids, clusterLabels, labels = getClusters(k, data, Hierarchical.tree)
 
-    return {'centroids': centroids, 'clusterLabels': clusterLabels}
+    return {'centroids': centroids, 'clusterLabels': clusterLabels, 'dendrogram': Hierarchical.tree.json()}
     # print('\t-> creating dendrogram tree...')
     # tree = Hierarchical.generateTree(linkage)
     # print('\t-> creating json string ...')
@@ -134,3 +135,15 @@ def getClusterDistances(data, labels, externLabels = None):
         return {'labels': distLabels, 'distances': distValues}
 
 ########################################################################################################################
+
+def getClustersFromDendrogram(data, dendrogram, numClusters):
+    """
+
+    :param data:
+    :param dendrogram:
+    :param numClusters:
+    :return:
+    """
+
+    centroids, clusterLabels, _ = getClusters(numClusters, data, dendrogram)
+    return {'centroids': centroids, 'clusterLabels': clusterLabels}

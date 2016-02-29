@@ -121,6 +121,21 @@ def getDistances(datasetID):
 
 ########################################################################################################################
 
+@app.route('/dendrogram/<numClusters>/<datasetID>', methods=['POST'])
+def dendrogramClusters(numClusters, datasetID):
+    data = loadData(datasetID)
+
+    if 'group' in flask.request.values:
+        dendrogram = loadAttribute(flask.request.values['group'], 'dendrogram')
+    else:
+        return ''
+
+    response = getClustersFromDendrogram(data, dendrogram, int(numClusters))
+    return flask.jsonify(response)
+
+
+########################################################################################################################
+
 def create():
   """
   Standard Caleydo convention for creating the service when server is initialized.

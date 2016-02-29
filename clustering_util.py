@@ -45,10 +45,10 @@ class BinaryNode:
         self.indices = [id]
 
         # create json info on the fly
-        self.json = {"id": self.id, "size": self.size, "value": self.value}
+        self.json = {"id": self.id, "size": self.size, "value": self.value, "indices": [id]}
         if leftChild is not None and rightChild is not None:
-            self.json["value"] = np.mean(self.value)
-            self.json["children"] = [leftChild.json, rightChild.json]
+            # self.json["value"] = np.mean(self.value)
+            self.json["children"] = [rightChild.json, leftChild.json]
             self.indices = [] + rightChild.indices + leftChild.indices
             self.json["indices"] = self.indices
 
@@ -65,19 +65,32 @@ class BinaryTree:
     def __init__(self, leftNode, rightNode, newID, newValue):
         self.__createNewRoot(leftNode, rightNode, newID, newValue)
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     def addNode(self, newNode, newID, newValue):
         self.__createNewRoot(self.root, newNode, newID, newValue)
         return self
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     def merge(self, tree, newID, newValue):
         self.__createNewRoot(self.root, tree.root, newID, newValue)
         return self
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def jsonify(self):
         import json
         return json.dumps(self.root.json)
         # return self.root.json
         # return self.__traverseJson(self.root)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def json(self):
+        return self.root.json
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def cutTreeByClusters(self, k):
         queue = [self.root]
@@ -102,7 +115,7 @@ class BinaryTree:
 
         return clusters
 
-
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __traverseJson(self, node):
         json = {"id": node.id, "size": node.size, "value": node.value}
@@ -113,9 +126,13 @@ class BinaryTree:
 
         return json
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     def getLeaves(self):
         return self.root.indices
         # return self.__traverseIDs(self.root)
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __traverseIDs(self, node):
 
@@ -124,10 +141,39 @@ class BinaryTree:
         else:
             return [] + self.__traverseIDs(node.right) + self.__traverseIDs(node.left)
 
+    # ------------------------------------------------------------------------------------------------------------------
+
     def __createNewRoot(self, leftNode, rightNode, newID, newValue):
             newSize = leftNode.size + rightNode.size
             self.root = BinaryNode(newValue, newID, newSize, leftNode, rightNode)
             leftNode.parent = rightNode.parent = self.root
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+def cutJsonTreeByClusters(jsonData, k):
+    # import json
+    # tree = json.loads(jsonData)
+    queue = [jsonData]
+
+    while len(queue) < k:
+        node = queue.pop(0)
+        queue.append(node['children'][0])
+        queue.append(node['children'][1])
+
+        def keyFunc(x):
+            if 'children' not in x:
+                return 0
+            else:
+                return -x['value']
+
+        queue.sort(key=keyFunc)
+
+    clusters = []
+
+    for node in queue:
+        clusters.append(node['indices'])
+
+    return clusters
 
 ########################################################################################################################
 
