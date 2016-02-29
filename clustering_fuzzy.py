@@ -23,7 +23,7 @@ class Fuzzy(object):
     Formulas: https://en.wikipedia.org/wiki/Fuzzy_clustering
     """
 
-    def __init__(self, obs, numClusters, m=2, init=None, error=0.0001):
+    def __init__(self, obs, numClusters, m=2, init=None, distance=euclideanDistance, error=0.0001):
         """
 
         :param obs:
@@ -56,6 +56,8 @@ class Fuzzy(object):
         self.__centroids = np.zeros(self.__c)
         # threshold for stopping criterion
         self.__error = error
+        # distance function
+        self.__distance = distance
 
 
     def __call__(self):
@@ -82,7 +84,7 @@ class Fuzzy(object):
         sumWeights = np.sum(uM, axis=1)
         # tile array (sum of weights repeated in every row)
         sumWeights = np.ones((m, 1)).dot(np.atleast_2d(sumWeights)).T
-
+        # divide by total sum to get new centroids
         self.__centroids = sumDataWeights / sumWeights
 
     def computeCoefficients(self):
@@ -95,7 +97,7 @@ class Fuzzy(object):
         distMat = np.zeros((self.__c, self.__n))
 
         for ii in range(self.__c):
-            distMat[ii] = euclideanDistance(self.__obs, self.__centroids[ii])
+            distMat[ii] = self.__distance(self.__obs, self.__centroids[ii])
 
         # set zero values to smallest values to prevent inf results
         distMat = np.fmax(distMat, np.finfo(np.float64).eps)
@@ -138,6 +140,7 @@ class Fuzzy(object):
         :return:
         """
         # assign patient to clusters
+        # transpose to get a (n, c) matrix
         u = self.__u.T
 
         self.__labels = np.zeros(self.__n, dtype=np.int)
@@ -146,14 +149,18 @@ class Fuzzy(object):
         maxProb = 1.0 / self.__c
 
         for ii in range(self.__n):
-            for jj in range(self.__c):
-                if u[ii][jj] >= maxProb:
-                  clusterID = jj
-                  self.__labels = clusterID
-                  self.__clusterLabels[clusterID].append(ii)
+            clusterID = np.argmax(u[ii])
+            self.__labels = clusterID
+            self.__clusterLabels[clusterID].append(ii)
+
+            # for jj in range(self.__c):
+                # if u[ii][jj] >= maxProb:
+                #   clusterID = jj
+                #   self.__labels = clusterID
+                #   self.__clusterLabels[clusterID].append(ii)
 
         for ii in range(self.__c):
-            self.__clusterLabels[ii],_ = computeClusterInternDistances(self.__obs, self.__clusterLabels[ii])
+            self.__clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, self.__clusterLabels[ii])
 
 ########################################################################################################################
 
@@ -179,5 +186,5 @@ if __name__ == '__main__':
 
     data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
 
-    fuz = Fuzzy(data, 3, 2)
+    fuz = Fuzzy(data, 3, 1.1)
     print(fuz.run())

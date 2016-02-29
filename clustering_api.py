@@ -80,7 +80,7 @@ def fuzzyClustering(numClusters, m, datasetID):
     """
     try:
         data = loadData(datasetID)
-        response = runFuzzy(data, int(numClusters), int(m))
+        response = runFuzzy(data, int(numClusters), float(m))
         return flask.jsonify(response)
     except:
         return flask.jsonify({})
