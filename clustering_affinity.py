@@ -254,8 +254,8 @@ class AffinityPropagation:
             clusterLabels[index].append(ii)
 
         # return sorted cluster labels (that's why we call compute cluster distances, might be redundant)
-        for ii in range(numClusters):
-            clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, clusterLabels[ii])
+        # for ii in range(numClusters):
+        #     clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, clusterLabels[ii])
 
         # if isConverged:
         #     print('Algorithm has converged after {} iterations'.format(it))

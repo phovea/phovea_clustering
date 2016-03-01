@@ -59,10 +59,10 @@ def runKMeans(data, k, initMethod):
     """
     KMeans = loadPlugin('caleydo-clustering-kmeans', data, k, initMethod)
     # and run the kmeans extension
-    centroids, labels = KMeans()
-    clusterLabels, clusterDists = KMeans.getDistsPerCentroid()
+    centroids, labels, clusterLabels = KMeans()
+    # clusterLabels, clusterDists = KMeans.getDistsPerCentroid()
 
-    return {'centroids': centroids, 'clusterLabels': clusterLabels, 'clusterDistances': clusterDists}
+    return {'centroids': centroids, 'clusterLabels': clusterLabels}
 
 ########################################################################################################################
 
@@ -77,7 +77,7 @@ def runHierarchical(data, k, method, distance):
     # and use the extension
     Hierarchical()
     # obtain k-number of clusters
-    centroids, clusterLabels, labels = getClusters(k, data, Hierarchical.tree)
+    centroids, clusterLabels, labels = getClusters(k, data, Hierarchical.tree, False)
 
     return {'centroids': centroids, 'clusterLabels': clusterLabels, 'dendrogram': Hierarchical.tree.json()}
     # print('\t-> creating dendrogram tree...')

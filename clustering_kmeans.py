@@ -301,7 +301,7 @@ class KMeans:
 
         # write results to the class members
         self.__end()
-        return self.__centroids.tolist(), self.__labels.tolist()
+        return self.__centroids.tolist(), self.__labels.tolist(), self.__clusterLabels
         #, self.__centroidDistMat.tolist()
 
     # ------------------------------------------------------------------------------------------------------------------

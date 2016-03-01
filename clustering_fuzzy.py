@@ -159,8 +159,8 @@ class Fuzzy(object):
                 #   self.__labels = clusterID
                 #   self.__clusterLabels[clusterID].append(ii)
 
-        for ii in range(self.__c):
-            self.__clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, self.__clusterLabels[ii])
+        # for ii in range(self.__c):
+        #     self.__clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, self.__clusterLabels[ii])
 
 ########################################################################################################################
 

@@ -354,7 +354,7 @@ class Hierarchical(object):
 
 from clustering_util import cutJsonTreeByClusters
 
-def getClusters(k, obs, dendrogram):
+def getClusters(k, obs, dendrogram, sorted=True):
     """
     First implementation to cut dendrogram tree automatically by choosing nodes having the greatest node values
     or rather distance to the other node / potential cluster
@@ -384,7 +384,8 @@ def getClusters(k, obs, dendrogram):
             labels[id] = clusterID
 
         # sort labels according to their distance
-        clusterLabels[ii], _ = computeClusterInternDistances(obs, cluster)
+        if sorted:
+            clusterLabels[ii], _ = computeClusterInternDistances(obs, cluster)
 
         clusterID += 1
 
@@ -414,24 +415,6 @@ from timeit import default_timer as timer
 from scipy.cluster.hierarchy import linkage, leaves_list
 
 if __name__ == '__main__':
-
-    # from scipy.spatial.distance import cdist
-    #
-    # a = np.array([[1,2,3], [4,5,6]])
-    # b = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
-    #
-    # c = cdist(b, a)
-    #
-    # from clustering_util import euclideanDistance
-    #
-    # d = np.zeros((2, 6))
-    # for ii in range(2):
-    #     d[ii] = euclideanDistance(b, a[ii])
-    #
-    # d = np.fmax(d, np.finfo(np.float64).eps)
-    #
-    # u = d ** (-2.)
-    # u /= np.ones((2, 1)).dot(np.atleast_2d(np.sum(u, axis=0)))
 
     np.random.seed(200)
     data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
