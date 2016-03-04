@@ -23,12 +23,12 @@ class Fuzzy(object):
     Formulas: https://en.wikipedia.org/wiki/Fuzzy_clustering
     """
 
-    def __init__(self, obs, numClusters, m=2, init=None, distance=euclideanDistance, error=0.0001):
+    def __init__(self, obs, numClusters, m=2.0, init=None, distance=euclideanDistance, error=0.001):
         """
-
-        :param obs:
-        :param clusters:
-        :param m:
+        Initializes algorithm.
+        :param obs: observation matrix / genomic data
+        :param numClusters: number of clusters
+        :param m: fuzzifier, controls degree of fuzziness, from [1; inf]
         :return:
         """
         # observation
@@ -37,7 +37,7 @@ class Fuzzy(object):
         self.__n = obs.shape[0]
 
         # fuzzifier value
-        self.__m = m
+        self.__m = np.float(m)
         # number of clusters
         self.__c = numClusters
 
@@ -47,9 +47,8 @@ class Fuzzy(object):
 
         self.__u = np.copy(init)
 
-        # TODO! scikit normalizes the values at the beginning and at each step to [0;1]
+        # TODO! scikit normalizes the values at the beginning and at each step to [0; 1]
         self.__u /= np.ones((self.__c, 1)).dot(np.atleast_2d(np.sum(self.__u, axis=0))).astype(np.float64)
-
         # remove all zero values and set them to smallest possible value
         self.__u = np.fmax(self.__u, np.finfo(np.float64).eps)
         # centroids
@@ -69,13 +68,9 @@ class Fuzzy(object):
 
     def computeCentroid(self):
         """
-
+        Compute the new centroids using the computed partition matrix.
         :return:
         """
-        # normalize data and eliminate zero values
-        # uOld /= np.ones((self.__c, 1)).dot(np.atleast_2d(np.sum(uOld, axis=0)))
-        # uOld = np.fmax(uOld, np.finfo(np.float64).eps)
-
         uM = self.__u ** self.__m
 
         sumDataWeights = np.dot(uM, self.__obs)
@@ -89,7 +84,7 @@ class Fuzzy(object):
 
     def computeCoefficients(self):
         """
-
+        Compute new partition matrix / weights describing the degree of membership of each patient to all clusters.
         :return:
         """
 
@@ -103,40 +98,50 @@ class Fuzzy(object):
         distMat = np.fmax(distMat, np.finfo(np.float64).eps)
 
         # apply coefficient formula
-        self.__u = distMat ** (-2.0 / (self.__m - 1))
+        denom = np.float(self.__m - 1.0)
+        self.__u = distMat ** (-2.0 / denom)
+
         sumCoeffs = np.sum(self.__u, axis=0)
+
         self.__u /= np.ones((self.__c, 1)).dot(np.atleast_2d(sumCoeffs))
         self.__u = np.fmax(self.__u, np.finfo(np.float64).eps)
 
     def run(self):
         """
-
+        Perform the c-means fuzzy clustering.
         :return:
         """
         MAX_ITER = 1000
         iter = 0
 
         while iter < MAX_ITER:
-            # copy old weights matrix
+            # save last partition matrix
             uOld = np.copy(self.__u)
             # compute centroids with given weights
             self.computeCentroid()
             # compute new coefficient matrix
             self.computeCoefficients()
 
+            # normalize weight / partition matrix u
+            self.__u /= np.ones((self.__c, 1)).dot(np.atleast_2d(np.sum(self.__u, axis=0)))
+            self.__u = np.fmax(self.__u, np.finfo(np.float64).eps)
+
             # compute the difference between the old and new matrix
             epsilon = np.linalg.norm(self.__u - uOld)
+
             # stop if difference (epsilon) is smaller than the user-defined threshold
             if epsilon < self.__error:
                 break
 
+            iter += 1
+
         self.__end()
 
-        return self.__centroids.tolist(), self.__clusterLabels#, self.__u.T.tolist()
+        return self.__centroids.tolist(), self.__clusterLabels #, self.__u.T.tolist()
 
     def __end(self):
         """
-
+        Conduct the cluster assignments and creates clusterLabel array.
         :return:
         """
         # assign patient to clusters
@@ -146,18 +151,18 @@ class Fuzzy(object):
         self.__labels = np.zeros(self.__n, dtype=np.int)
         self.__clusterLabels = [[] for _ in range(self.__c)]
 
-        maxProb = 1.0 / self.__c
+        maxProb = np.float64(1.0 / self.__c)
 
         for ii in range(self.__n):
-            clusterID = np.argmax(u[ii])
-            self.__labels = clusterID
-            self.__clusterLabels[clusterID].append(ii)
+            # clusterID = np.argmax(u[ii])
+            # self.__labels = clusterID
+            # self.__clusterLabels[clusterID].append(ii)
 
-            # for jj in range(self.__c):
-                # if u[ii][jj] >= maxProb:
-                #   clusterID = jj
-                #   self.__labels = clusterID
-                #   self.__clusterLabels[clusterID].append(ii)
+            for jj in range(self.__c):
+                if u[ii][jj] >= maxProb:
+                  clusterID = jj
+                  self.__labels = clusterID
+                  self.__clusterLabels[clusterID].append(ii)
 
         # for ii in range(self.__c):
         #     self.__clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, self.__clusterLabels[ii])
@@ -186,5 +191,5 @@ if __name__ == '__main__':
 
     data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
 
-    fuz = Fuzzy(data, 3, 1.1)
+    fuz = Fuzzy(data, 3, 1.05)
     print(fuz.run())
