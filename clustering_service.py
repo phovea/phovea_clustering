@@ -111,9 +111,9 @@ def runAffinityPropagation(data, damping, factor, preference, distance):
 def runFuzzy(data, numClusters, m):
     Fuzzy = loadPlugin('caleydo-clustering-fuzzy', data, numClusters, m)
 
-    centroids, clusterLabels = Fuzzy()
+    centroids, clusterLabels, partitionMatrix = Fuzzy()
 
-    return {'centroids': centroids, 'clusterLabels': clusterLabels}
+    return {'centroids': centroids, 'clusterLabels': clusterLabels, 'partitionMatrix': partitionMatrix}
 
 ########################################################################################################################
 

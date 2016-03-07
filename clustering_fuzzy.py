@@ -137,7 +137,9 @@ class Fuzzy(object):
 
         self.__end()
 
-        return self.__centroids.tolist(), self.__clusterLabels #, self.__u.T.tolist()
+        u = self.__u.T
+
+        return self.__centroids.tolist(), self.__clusterLabels, u.tolist()
 
     def __end(self):
         """
@@ -150,7 +152,9 @@ class Fuzzy(object):
 
         self.__labels = np.zeros(self.__n, dtype=np.int)
         self.__clusterLabels = [[] for _ in range(self.__c)]
-
+        # gather all probabilities / degree of memberships of each patient to the clusters
+        # self.__clusterProbs = [[] for _ in range(self.__c)]
+        # probability that the patients belongs to each cluster
         maxProb = np.float64(1.0 / self.__c)
 
         for ii in range(self.__n):
@@ -162,7 +166,7 @@ class Fuzzy(object):
                 if u[ii][jj] >= maxProb:
                   clusterID = jj
                   self.__labels = clusterID
-                  self.__clusterLabels[clusterID].append(ii)
+                  self.__clusterLabels[clusterID].append(int(ii))
 
         # for ii in range(self.__c):
         #     self.__clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, self.__clusterLabels[ii])
