@@ -23,7 +23,7 @@ class Fuzzy(object):
     Formulas: https://en.wikipedia.org/wiki/Fuzzy_clustering
     """
 
-    def __init__(self, obs, numClusters, m=2.0, init=None, distance=euclideanDistance, error=0.001):
+    def __init__(self, obs, numClusters, m=2.0, init=None, distance=euclideanDistance, error=0.0001):
         """
         Initializes algorithm.
         :param obs: observation matrix / genomic data
@@ -111,7 +111,7 @@ class Fuzzy(object):
         Perform the c-means fuzzy clustering.
         :return:
         """
-        MAX_ITER = 1000
+        MAX_ITER = 100
         iter = 0
 
         while iter < MAX_ITER:
@@ -138,6 +138,7 @@ class Fuzzy(object):
         self.__end()
 
         u = self.__u.T
+        # print(self.__u.T)
 
         return self.__centroids.tolist(), self.__clusterLabels, u.tolist()
 
@@ -193,7 +194,7 @@ def create(data, numCluster, m):
 
 if __name__ == '__main__':
 
-    data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+    data = np.array([[1,1,2],[5,4,5],[3,2,2],[8,8,7],[9,8,9],[2,2,2]])
 
-    fuz = Fuzzy(data, 3, 1.05)
+    fuz = Fuzzy(data, 3, 1.5)
     print(fuz.run())
