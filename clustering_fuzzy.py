@@ -23,7 +23,7 @@ class Fuzzy(object):
     Formulas: https://en.wikipedia.org/wiki/Fuzzy_clustering
     """
 
-    def __init__(self, obs, numClusters, m=2.0, init=None, distance=euclideanDistance, error=0.0001):
+    def __init__(self, obs, numClusters, m=2.0, threshold=-1, distance=euclideanDistance, init=None, error=0.0001):
         """
         Initializes algorithm.
         :param obs: observation matrix / genomic data
@@ -58,6 +58,13 @@ class Fuzzy(object):
         # distance function
         self.__distance = distance
 
+        # threshold or minimum probability used for cluster assignments
+        if threshold == -1:
+            self.__threshold = 1.0 / numClusters
+        else:
+            self.__threshold = threshold
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __call__(self):
         """
@@ -65,6 +72,8 @@ class Fuzzy(object):
         :return:
         """
         return self.run()
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def computeCentroid(self):
         """
@@ -81,6 +90,8 @@ class Fuzzy(object):
         sumWeights = np.ones((m, 1)).dot(np.atleast_2d(sumWeights)).T
         # divide by total sum to get new centroids
         self.__centroids = sumDataWeights / sumWeights
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def computeCoefficients(self):
         """
@@ -105,6 +116,8 @@ class Fuzzy(object):
 
         self.__u /= np.ones((self.__c, 1)).dot(np.atleast_2d(sumCoeffs))
         self.__u = np.fmax(self.__u, np.finfo(np.float64).eps)
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def run(self):
         """
@@ -140,7 +153,9 @@ class Fuzzy(object):
         u = self.__u.T
         # print(self.__u.T)
 
-        return self.__centroids.tolist(), self.__clusterLabels, u.tolist()
+        return self.__centroids.tolist(), self.__clusterLabels, u.tolist(), self.__threshold
+
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __end(self):
         """
@@ -156,7 +171,8 @@ class Fuzzy(object):
         # gather all probabilities / degree of memberships of each patient to the clusters
         # self.__clusterProbs = [[] for _ in range(self.__c)]
         # probability that the patients belongs to each cluster
-        maxProb = np.float64(1.0 / self.__c)
+        maxProb = np.float64(self.__threshold)
+        print(maxProb)
 
         for ii in range(self.__n):
             # clusterID = np.argmax(u[ii])
@@ -183,12 +199,12 @@ def _plugin_initialize():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def create(data, numCluster, m):
+def create(data, numCluster, m, threshold):
     """
     by convention contain a factory called create returning the extension implementation
     :return:
     """
-    return Fuzzy(data, numCluster, m)
+    return Fuzzy(data, numCluster, m, threshold)
 
 ########################################################################################################################
 

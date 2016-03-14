@@ -72,17 +72,18 @@ def affinityPropagationClustering(damping, factor, preference, distance, dataset
 
 ########################################################################################################################
 
-@app.route('/fuzzy/<numClusters>/<m>/<datasetID>')
-def fuzzyClustering(numClusters, m, datasetID):
+@app.route('/fuzzy/<numClusters>/<m>/<threshold>/<datasetID>')
+def fuzzyClustering(numClusters, m, threshold, datasetID):
     """
     :param numClusters:
     :param m:
+    :param threshold:
     :param datasetID:
     :return:
     """
     try:
         data = loadData(datasetID)
-        response = runFuzzy(data, int(numClusters), float(m))
+        response = runFuzzy(data, int(numClusters), float(m), float(threshold))
         return flask.jsonify(response)
     except:
         return flask.jsonify({})
