@@ -172,7 +172,6 @@ class Fuzzy(object):
         # self.__clusterProbs = [[] for _ in range(self.__c)]
         # probability that the patients belongs to each cluster
         maxProb = np.float64(self.__threshold)
-        print(maxProb)
 
         for ii in range(self.__n):
             # clusterID = np.argmax(u[ii])
