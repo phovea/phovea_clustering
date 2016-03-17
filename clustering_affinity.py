@@ -11,7 +11,7 @@ import caleydo_server.config
 config = caleydo_server.config.view('caleydo-clustering')
 
 import numpy as np
-from clustering_util import similarityMeasurement
+from clustering_util import similarityMeasurementMatrix
 from clustering_util import computeClusterInternDistances
 from timeit import default_timer as timer
 
@@ -78,7 +78,7 @@ class AffinityPropagation:
         :return: Similarity matrix
         """
         # compute distance matrix containing the negative sq euclidean distances -|| xi - xj ||**2
-        self.__S = -similarityMeasurement(self.__obs, self.__distance)
+        self.__S = -similarityMeasurementMatrix(self.__obs, self.__distance)
 
         # determine the preferences S(k,k) to control the output of clusters
         pref = 0

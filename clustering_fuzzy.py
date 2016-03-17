@@ -13,7 +13,7 @@ config = caleydo_server.config.view('caleydo-clustering')
 # library to conduct matrix/vector calculus
 import numpy as np
 
-from clustering_util import euclideanDistance, computeClusterInternDistances
+from clustering_util import similarityMeasurement
 
 ########################################################################################################################
 # class definition
@@ -23,7 +23,7 @@ class Fuzzy(object):
     Formulas: https://en.wikipedia.org/wiki/Fuzzy_clustering
     """
 
-    def __init__(self, obs, numClusters, m=2.0, threshold=-1, distance=euclideanDistance, init=None, error=0.0001):
+    def __init__(self, obs, numClusters, m=2.0, threshold=-1, distance='euclidean', init=None, error=0.0001):
         """
         Initializes algorithm.
         :param obs: observation matrix / genomic data
@@ -103,7 +103,7 @@ class Fuzzy(object):
         distMat = np.zeros((self.__c, self.__n))
 
         for ii in range(self.__c):
-            distMat[ii] = self.__distance(self.__obs, self.__centroids[ii])
+            distMat[ii] = similarityMeasurement(self.__obs, self.__centroids[ii], self.__distance)
 
         # set zero values to smallest values to prevent inf results
         distMat = np.fmax(distMat, np.finfo(np.float64).eps)

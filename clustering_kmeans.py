@@ -16,7 +16,7 @@ import numpy as np
 import random
 
 # contains utility functions
-from clustering_util import weightedChoice, squaredEuclideanDistance, computeClusterInternDistances
+from clustering_util import weightedChoice, similarityMeasurement, computeClusterInternDistances
 
 ########################################################################################################################
 
@@ -28,7 +28,7 @@ class KMeans:
     Implementation detail: <https://en.wikipedia.org/wiki/K-means_clustering>
     """
 
-    def __init__(self, obs, k, initMode='kmeans++', iters=1000, compare=squaredEuclideanDistance):
+    def __init__(self, obs, k, initMode='kmeans++', iters=1000, compare='sqeuclidean'):
         """
         Initializes the algorithm with observation, number of k clusters, the initial method and
         the maximum number of iterations.
@@ -150,7 +150,7 @@ class KMeans:
             probs.fill(maxValue)
             # compute new probabilities, choose min of all distances
             for j in range(0, i):
-                dists = self.__compare(self.__obs, self.__clusterMeans[j])
+                dists = similarityMeasurement(self.__obs, self.__clusterMeans[j], self.__compare)
                 # collect minimum squared distances to cluster centroids
                 probs = np.minimum(probs, dists)
 
@@ -210,7 +210,7 @@ class KMeans:
             value = self.__obs[i]
 
             # compute squared distances to each mean
-            dists = self.__compare(self.__clusterMeans, value)
+            dists = similarityMeasurement(self.__clusterMeans, value, self.__compare)
             # nearest cluster
             nearestID = np.argmin(dists)
 
@@ -306,35 +306,35 @@ class KMeans:
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def getDistsPerCentroid(self):
-        """
-        Compute the distances between observations belonging to one cluster and the corresponding cluster centroid.
-        Cluster labels are sorted in ascending order using their distances
-        :return: array of distance arrays for each cluster and ordered labels
-        """
-
-        # labels per centroid
-        # self.__clusterLabels = [[] for _ in range(self.__k)]
-        # distances of obs to their cluster
-        self.__centroidDists = [[] for _ in range(self.__k)]
-
-        for ii in range(self.__k):
-            self.__clusterLabels[ii] = np.array(self.__clusterLabels[ii], dtype=np.int)
-
-        # compute euclidean distances of values to cluster mean
-        for ii in range(self.__k):
-            mean = self.__clusterMeans[ii]
-            obs = self.__obs[self.__clusterLabels[ii]]
-            dists = np.sqrt(self.__compare(obs, mean)).tolist()
-            self.__centroidDists[ii] = dists
-
-            # sort indices in ascending order using the distances
-            indices = range(len(dists))
-            indices.sort(key=dists.__getitem__)
-            self.__clusterLabels[ii] = self.__clusterLabels[ii][indices].tolist()
-            self.__centroidDists[ii].sort()
-
-        return self.__clusterLabels, self.__centroidDists
+    # def getDistsPerCentroid(self):
+    #     """
+    #     Compute the distances between observations belonging to one cluster and the corresponding cluster centroid.
+    #     Cluster labels are sorted in ascending order using their distances
+    #     :return: array of distance arrays for each cluster and ordered labels
+    #     """
+    #
+    #     # labels per centroid
+    #     # self.__clusterLabels = [[] for _ in range(self.__k)]
+    #     # distances of obs to their cluster
+    #     self.__centroidDists = [[] for _ in range(self.__k)]
+    #
+    #     for ii in range(self.__k):
+    #         self.__clusterLabels[ii] = np.array(self.__clusterLabels[ii], dtype=np.int)
+    #
+    #     # compute euclidean distances of values to cluster mean
+    #     for ii in range(self.__k):
+    #         mean = self.__clusterMeans[ii]
+    #         obs = self.__obs[self.__clusterLabels[ii]]
+    #         dists = similarityMeasurement(obs, mean, self.__compare).tolist()
+    #         self.__centroidDists[ii] = dists
+    #
+    #         # sort indices in ascending order using the distances
+    #         indices = range(len(dists))
+    #         indices.sort(key=dists.__getitem__)
+    #         self.__clusterLabels[ii] = self.__clusterLabels[ii][indices].tolist()
+    #         self.__centroidDists[ii].sort()
+    #
+    #     return self.__clusterLabels, self.__centroidDists
 
 ########################################################################################################################
 
@@ -379,7 +379,7 @@ if __name__ == '__main__':
         result1 = kMeansPlus.run()
         #print(result)
         e1 = timer()
-        labels, dists = kMeansPlus.getDistsPerCentroid()
+        # labels = kMeansPlus.getDistsPerCentroid()
         # l, d = computeClusterDistances(data, labels[0])
 
         s2 = timer()

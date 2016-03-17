@@ -6,6 +6,10 @@ __email__ = 'kernm@in.tum.de'
 import random
 import numpy as np
 
+# use scipy to compute different distance matrices
+from scipy.spatial.distance import pdist, squareform
+import scipy.stats as stats
+
 """
 http://eli.thegreenplace.net/2010/01/22/weighted-random-generation-in-python
 --> good explanation to create weighted choices / random numbers
@@ -177,7 +181,7 @@ def cutJsonTreeByClusters(jsonData, k):
 
 ########################################################################################################################
 
-def squaredEuclideanDistance(matrix, vector):
+def euclideanDistance(matrix, vector, squared=False):
     """
     Computes the euclidean distance between a vector and the rows of a matrix in parallel.
     :param matrix: array of observations or clusters
@@ -196,14 +200,65 @@ def squaredEuclideanDistance(matrix, vector):
         # it's way faster than ** 2 and sum(..., axis=1)
         distances[ii] = np.dot(distance, distance)
 
-    return distances
-
-def euclideanDistance(matrix, vector):
-    return np.sqrt(squaredEuclideanDistance(matrix, vector))
+    if squared:
+        return distances
+    else:
+        return np.sqrt(distances)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def squaredEuclideanDistanceMatrix(matrix):
+def correlationDistance(matrix, vector, method):
+    """
+
+    :param matrix:
+    :param vector:
+    :return:
+    """
+
+    numValues = len(matrix)
+    distances = np.array([0.0 for _ in range(numValues)], dtype=np.float)
+
+    for ii in range(numValues):
+        value = matrix[ii]
+
+        if method == 'pearson':
+            distances[ii], _ = stats.pearsonr(value, vector)
+        elif method == 'spearman':
+            distances[ii], _ = stats.spearmanr(value, vector)
+        elif method == 'kendall':
+            distances[ii], _ = stats.kendalltau(value, vector)
+        else:
+            raise AttributeError
+
+    return distances
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+from scipy.spatial.distance import cdist
+
+def similarityMeasurement(matrix, vector, method='euclidean'):
+
+    if method == 'euclidean':
+        return euclideanDistance(matrix, vector)
+
+    if method == 'sqeuclidean':
+        return euclideanDistance(matrix, vector, True)
+
+    spatialMethods = ['cityblock', 'chebyshev', 'canberra', 'correlation', 'hamming', 'mahalanobis', 'correlation']
+
+    if method in spatialMethods:
+        return cdist(matrix, np.atleast_2d(vector), method).flatten()
+
+    corrMethods = ['spearman', 'pearson', 'kendall']
+
+    if method in corrMethods:
+        return correlationDistance(matrix, vector, method)
+
+    raise AttributeError
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+def euclideanDistanceMatrix(matrix, squared=False):
     """
     Compute the euclidean distance matrix required for the algorithm
     :param matrix:
@@ -241,11 +296,10 @@ def squaredEuclideanDistanceMatrix(matrix):
     # self.__d = spt.distance.squareform(distMat)
     # print(distMat)
 
-    return distMat
-
-
-def euclideanDistanceMatrix(matrix):
-    return np.sqrt(squaredEuclideanDistanceMatrix(matrix))
+    if squared:
+        return distMat
+    else:
+        return np.sqrt(distMat)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -278,8 +332,6 @@ def pearsonCorrelationMatrix(matrix):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-import scipy.stats as stats
-
 def statsCorrelationMatrix(matrix, method):
     if method == 'pearson':
         return pearsonCorrelationMatrix(matrix)
@@ -309,10 +361,7 @@ def statsCorrelationMatrix(matrix, method):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-# use scipy to compute different distance matrices
-from scipy.spatial.distance import pdist, squareform
-
-def similarityMeasurement(matrix, method):
+def similarityMeasurementMatrix(matrix, method):
     """
     Generic function to determine the similarity measurement for clustering
     :param matrix:
@@ -324,7 +373,7 @@ def similarityMeasurement(matrix, method):
         # return squareform(pdist(matrix, method))
 
     if method == 'sqeuclidean':
-        return squaredEuclideanDistanceMatrix(matrix)
+        return euclideanDistanceMatrix(matrix, True)
         # return squareform(pdist(matrix, method))
 
     spatialMethods = ['cityblock', 'chebyshev', 'canberra', 'correlation', 'hamming', 'mahalanobis', 'correlation']
@@ -343,7 +392,7 @@ def similarityMeasurement(matrix, method):
 ########################################################################################################################
 # utility functions to compute distances between rows and cluster centroids
 
-def computeClusterInternDistances(matrix, labels, sorted=True):
+def computeClusterInternDistances(matrix, labels, sorted=True, metric='euclidean'):
     """
     Computes the distances of each element in one cluster to the cluster's centroid. Returns distance values and labels
     sorted in ascending order.
@@ -360,7 +409,7 @@ def computeClusterInternDistances(matrix, labels, sorted=True):
     centroid = np.mean(subMatrix, axis=0)
 
     # compute distances to centroid
-    dists = np.sqrt(squaredEuclideanDistance(subMatrix, centroid))
+    dists = similarityMeasurement(subMatrix, centroid, metric)
 
     if sorted:
         # sort values
@@ -379,7 +428,7 @@ def computeClusterInternDistances(matrix, labels, sorted=True):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def computeClusterExternDistances(matrix, labels, outerLabels):
+def computeClusterExternDistances(matrix, labels, outerLabels, metric='euclidean'):
     """
     Compute the distances of patients in one cluster to the centroids of all other clusters.
     :param matrix:
@@ -399,9 +448,16 @@ def computeClusterExternDistances(matrix, labels, outerLabels):
         subMatrix = matrix[externLabels]
         centroid = np.mean(subMatrix, axis=0)
 
-        dists = np.sqrt(squaredEuclideanDistance(internSubMatrix, centroid))
+        dists = similarityMeasurement(internSubMatrix, centroid, metric)
         externDists.append(dists.tolist())
 
     return externDists
 
 ########################################################################################################################
+
+if __name__ == '__main__':
+    print(cdist([[1,1,1],[3,3,3],[5,5,5]],np.atleast_2d([2,2,2]), 'sqeuclidean').flatten())
+
+    from scipy.stats import spearmanr
+
+    print(spearmanr([1,2,3],[2,4,1]))

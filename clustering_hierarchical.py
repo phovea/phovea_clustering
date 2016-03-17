@@ -17,7 +17,7 @@ import scipy.spatial as spt
 
 # utility functions for clustering and creating the dendrogram trees
 from clustering_util import BinaryNode, BinaryTree
-from clustering_util import similarityMeasurement
+from clustering_util import similarityMeasurementMatrix
 from clustering_util import computeClusterInternDistances
 
 ########################################################################################################################
@@ -150,7 +150,7 @@ class Hierarchical(object):
         # compute euclidean distance
         # TODO! implement generic distance functions
         # TODO! look for an alternative proximity analysis without computing all distances
-        self.__d = similarityMeasurement(self.__obs, self.__distance)
+        self.__d = similarityMeasurementMatrix(self.__obs, self.__distance)
 
         # get number of maximum value of float
         self.__maxValue = self.__d.max() + 1
