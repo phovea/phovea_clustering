@@ -34,7 +34,7 @@ class AffinityPropagation:
         :param prefMethod: all points are chosen equally with a given preference (median or minimum of similarity matrix)
         :return:
         """
-        self.__n, _ = np.shape(obs)
+        self.__n = np.shape(obs)[0]
         # observations, can be 1D array or 2D matrix with genes as rows and conditions as columns
         # remove all NaNs in data
         self.__obs = np.nan_to_num(obs)
@@ -292,13 +292,14 @@ def create(data, damping, factor, preference, distance):
 if __name__ == '__main__':
     np.random.seed(200)
     # data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
-    data = np.array([np.random.rand(8000) * 4 - 2 for _ in range(500)])
+    # data = np.array([np.random.rand(8000) * 4 - 2 for _ in range(500)])
     # data = np.array([[0.9],[1],[1.1],[10],[11],[12],[20],[21],[22]])
+    data = np.array([1,1.1,5,8,5.2,8.3])
 
     s = timer()
-    aff = AffinityPropagation(data, 0.5, 1.0, 'median')
+    aff = AffinityPropagation(data, 0.9, 1.0, 'median', 'euclidean')
     result = aff.run()
     e = timer()
-    # print(result)
+    print(result)
     print('time elapsed: {}'.format(e - s))
 

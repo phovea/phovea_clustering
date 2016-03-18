@@ -41,15 +41,18 @@ class Hierarchical(object):
         # remove all NaNs in data
         self.__obs = np.nan_to_num(obs)
 
-        # check if dimension is 2D
-        if self.__obs.ndim == 2:
-            # obtain number of observations (rows)
-            numGenes, _ = np.shape(self.__obs)
-            self.__n = numGenes
+        numGenes = np.shape(self.__obs)[0]
+        self.__n = numGenes
 
-        else:
-            print("[Error]:\tdata / observations must be 2D. 1D observation arrays are not supported")
-            raise AttributeError
+        # check if dimension is 2D
+        # if self.__obs.ndim == 2:
+        #     # obtain number of observations (rows)
+        #     numGenes, _ = np.shape(self.__obs)
+        #     self.__n = numGenes
+
+        # else:
+        #     print("[Error]:\tdata / observations must be 2D. 1D observation arrays are not supported")
+        #     raise AttributeError
 
         # distance measurement
         self.__distance = distance
@@ -298,7 +301,7 @@ class Hierarchical(object):
             Z[m - 1] = [int(min(clusterI, clusterJ)), int(max(clusterI, clusterJ)), np.float(distIJ), int(numIJ)]
 
         # reset number n to length of first dimension (number of genes)
-        self.__n, _ = np.shape(self.__obs)
+        self.__n = np.shape(self.__obs)[0]
 
         self.__tree = self.generateTree(Z)
         return Z.tolist()
@@ -417,7 +420,8 @@ from scipy.cluster.hierarchy import linkage, leaves_list
 if __name__ == '__main__':
 
     np.random.seed(200)
-    data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+    # data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+    data = np.array([1,1.1,5,8,5.2,8.3])
 
     timeMine = 0
     timeTheirs = 0
@@ -433,7 +437,7 @@ if __name__ == '__main__':
         # s = time.time()
         linkageMatrix = hier.run()
         e1 = timer()
-        # print(linkageMatrix)
+        print(linkageMatrix)
         tree = hier.generateTree(linkageMatrix)
         # print(tree.getLeaves())
         # print(tree.jsonify())

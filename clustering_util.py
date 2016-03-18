@@ -266,7 +266,7 @@ def euclideanDistanceMatrix(matrix, squared=False):
     :return:
     """
 
-    n, _ = np.shape(matrix)
+    n = np.shape(matrix)[0]
     distMat = np.zeros((n, n))
 
     # use Gram matrix and compute distances without inner products | FASTER than row-by-row method
@@ -336,7 +336,7 @@ def statsCorrelationMatrix(matrix, method):
     if method == 'pearson':
         return pearsonCorrelationMatrix(matrix)
 
-    n, _ = np.shape(matrix)
+    n = np.shape(matrix)[0]
     distMat = np.zeros((n, n))
 
     for ii in range(n):

@@ -46,7 +46,7 @@ class KMeans:
         # remove all NaNs in data
         self.__obs = np.nan_to_num(obs)
         # number of observations / genes
-        self.__n, _ = np.shape(obs)
+        self.__n = np.shape(obs)[0]
         # maps the element ids to clusters
         self.__labelMap = np.zeros(self.__n, dtype=np.int)
         # cluster means and number of elements
@@ -365,7 +365,9 @@ This is for testing the algorithm and comparing the resuls between this and scip
 if __name__ == '__main__':
     from datetime import datetime
     #np.random.seed(datetime.now())
-    data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+    # data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
+    data = np.array([1,1.1,5,8,5.2,8.3])
+
     # data = np.array([np.random.rand(2) * 5 for _ in range(10)])
     k = 3
 

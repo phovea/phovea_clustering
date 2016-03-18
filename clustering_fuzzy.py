@@ -83,11 +83,18 @@ class Fuzzy(object):
         uM = self.__u ** self.__m
 
         sumDataWeights = np.dot(uM, self.__obs)
-        m = self.__obs.shape[1]
+        if self.__obs.ndim == 1:
+            m = 1
+        else:
+            m = self.__obs.shape[1]
 
         sumWeights = np.sum(uM, axis=1)
         # tile array (sum of weights repeated in every row)
         sumWeights = np.ones((m, 1)).dot(np.atleast_2d(sumWeights)).T
+
+        if self.__obs.ndim == 1:
+            sumWeights = sumWeights.flatten()
+
         # divide by total sum to get new centroids
         self.__centroids = sumDataWeights / sumWeights
 
@@ -210,6 +217,7 @@ def create(data, numCluster, m, threshold):
 if __name__ == '__main__':
 
     data = np.array([[1,1,2],[5,4,5],[3,2,2],[8,8,7],[9,8,9],[2,2,2]])
+    # data = np.array([1,1.1,5,8,5.2,8.3])
 
     fuz = Fuzzy(data, 3, 1.5)
     print(fuz.run())
