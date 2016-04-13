@@ -12,7 +12,6 @@ config = caleydo_server.config.view('caleydo-clustering')
 
 import numpy as np
 from clustering_util import similarityMeasurementMatrix
-from clustering_util import computeClusterInternDistances
 from timeit import default_timer as timer
 
 ########################################################################################################################

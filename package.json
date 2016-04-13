@@ -1,8 +1,8 @@
 {
-  "name": "gene_clustering",
+  "name": "caleydo_clustering",
   "version": "1.0.0",
   "license" : "SEE LICENSE IN LICENSE",
-  "repository": "Caleydo/caleydo_clustering",
+  "repository": "K3rn1n4tor/caleydo_clustering",
   "dependencies": {
   },
   "peerDependencies": {
