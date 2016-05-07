@@ -244,7 +244,7 @@ def similarityMeasurement(matrix, vector, method='euclidean'):
     if method == 'sqeuclidean':
         return euclideanDistance(matrix, vector, True)
 
-    spatialMethods = ['cityblock', 'chebyshev', 'canberra', 'correlation', 'hamming', 'mahalanobis', 'correlation']
+    spatialMethods = ['cityblock', 'chebyshev', 'canberra', 'correlation', 'hamming', 'mahalanobis',]
 
     if method in spatialMethods:
         return cdist(matrix, np.atleast_2d(vector), method).flatten()
@@ -376,7 +376,7 @@ def similarityMeasurementMatrix(matrix, method):
         return euclideanDistanceMatrix(matrix, True)
         # return squareform(pdist(matrix, method))
 
-    spatialMethods = ['cityblock', 'chebyshev', 'canberra', 'correlation', 'hamming', 'mahalanobis', 'correlation']
+    spatialMethods = ['cityblock', 'chebyshev', 'canberra', 'correlation', 'hamming', 'mahalanobis']
 
     if method in spatialMethods:
         return squareform(pdist(matrix, method))
@@ -411,11 +411,18 @@ def computeClusterInternDistances(matrix, labels, sorted=True, metric='euclidean
     # compute distances to centroid
     dists = similarityMeasurement(subMatrix, centroid, metric)
 
-    if sorted:
+    if sorted == 'true':
         # sort values
         indices = range(len(dists))
         indices.sort(key=dists.__getitem__)
         dists.sort()
+
+        # reverse order if correlation coefficient is used
+        # (1 means perfect correlation while -1 denotes opposite correlation)
+        corrMetrics = ['pearson', 'spearman', 'kendall']
+        if metric in corrMetrics:
+            indices.reverse()
+            dists = dists[::-1]
 
         # write back to our arrays
         distLabels = clusterLabels[indices].tolist()

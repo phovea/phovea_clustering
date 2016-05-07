@@ -118,7 +118,7 @@ def runFuzzy(data, numClusters, m, threshold):
 
 ########################################################################################################################
 
-def getClusterDistances(data, labels, metric, externLabels = None):
+def getClusterDistances(data, labels, metric, externLabels = None, sorted = True):
     """
     Compute the cluster distances in a given data among certain rows (labels)
     :param data: genomic data
@@ -128,7 +128,7 @@ def getClusterDistances(data, labels, metric, externLabels = None):
     :return: labels and distances values sorted in ascending order
     """
     from clustering_util import computeClusterInternDistances, computeClusterExternDistances
-    distLabels, distValues = computeClusterInternDistances(data, labels, True, metric)
+    distLabels, distValues = computeClusterInternDistances(data, labels, sorted, metric)
 
     if externLabels is not None:
         externDists = computeClusterExternDistances(data, distLabels, externLabels, metric)

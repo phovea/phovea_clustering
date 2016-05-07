@@ -100,8 +100,8 @@ def loadAttribute(jsonData, attr):
 
 ########################################################################################################################
 
-@app.route('/distances/<metric>/<datasetID>', methods=['POST'])
-def getDistances(metric, datasetID):
+@app.route('/distances/<metric>/<datasetID>/<sorted>', methods=['POST'])
+def getDistances(metric, datasetID, sorted):
     """
     Compute the distances of the current stratification values to its centroid.
     :param metric:
@@ -118,7 +118,7 @@ def getDistances(metric, datasetID):
     else:
         return ''
 
-    response = getClusterDistances(data, labels, metric, externLabels)
+    response = getClusterDistances(data, labels, metric, externLabels, sorted)
     return flask.jsonify(response)
 
 ########################################################################################################################
