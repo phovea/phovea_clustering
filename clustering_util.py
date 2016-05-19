@@ -247,7 +247,7 @@ def similarityMeasurement(matrix, vector, method='euclidean'):
     spatialMethods = ['cityblock', 'chebyshev', 'canberra', 'correlation', 'hamming', 'mahalanobis',]
 
     if method in spatialMethods:
-        return cdist(matrix, np.atleast_2d(vector), method).flatten()
+        return np.nan_to_num(cdist(matrix, np.atleast_2d(vector), method).flatten())
 
     corrMethods = ['spearman', 'pearson', 'kendall']
 
@@ -379,7 +379,7 @@ def similarityMeasurementMatrix(matrix, method):
     spatialMethods = ['cityblock', 'chebyshev', 'canberra', 'correlation', 'hamming', 'mahalanobis']
 
     if method in spatialMethods:
-        return squareform(pdist(matrix, method))
+        return squareform(np.nan_to_num(pdist(matrix, method)))
 
     corrMethods = ['spearman', 'pearson', 'kendall']
 

@@ -28,7 +28,7 @@ class KMeans:
     Implementation detail: <https://en.wikipedia.org/wiki/K-means_clustering>
     """
 
-    def __init__(self, obs, k, initMode='kmeans++', iters=1000, compare='sqeuclidean'):
+    def __init__(self, obs, k, initMode='kmeans++', distance='sqeuclidean', iters=1000):
         """
         Initializes the algorithm with observation, number of k clusters, the initial method and
         the maximum number of iterations.
@@ -36,6 +36,7 @@ class KMeans:
         :param obs: genomic data / matrix
         :param k: number of clusters
         :param initMode: initialization method
+        :param distance: distance measurement
         :param iters: number of maximum iterations
         :return:
         """
@@ -59,7 +60,7 @@ class KMeans:
         # initialization method
         self.__initMode = initMode
         # compare function
-        self.__compare = compare
+        self.__distance = distance
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -150,7 +151,7 @@ class KMeans:
             probs.fill(maxValue)
             # compute new probabilities, choose min of all distances
             for j in range(0, i):
-                dists = similarityMeasurement(self.__obs, self.__clusterMeans[j], self.__compare)
+                dists = similarityMeasurement(self.__obs, self.__clusterMeans[j], self.__distance)
                 # collect minimum squared distances to cluster centroids
                 probs = np.minimum(probs, dists)
 
@@ -210,7 +211,7 @@ class KMeans:
             value = self.__obs[i]
 
             # compute squared distances to each mean
-            dists = similarityMeasurement(self.__clusterMeans, value, self.__compare)
+            dists = similarityMeasurement(self.__clusterMeans, value, self.__distance)
             # nearest cluster
             nearestID = np.argmin(dists)
 
@@ -347,12 +348,12 @@ def _plugin_initialize():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def create(data, k, initMethod):
+def create(data, k, initMethod, distance):
   """
   by convention contain a factory called create returning the extension implementation
   :return:
   """
-  return KMeans(data, k, initMethod)
+  return KMeans(data, k, initMethod, distance)
 
 ########################################################################################################################
 
@@ -377,7 +378,7 @@ if __name__ == '__main__':
 
     for i in range(10):
         s1 = timer()
-        kMeansPlus = KMeans(data, k, 'kmeans++', 10)
+        kMeansPlus = KMeans(data, k, 'kmeans++', 'sqeuclidean', 10)
         result1 = kMeansPlus.run()
         #print(result)
         e1 = timer()

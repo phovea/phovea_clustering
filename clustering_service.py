@@ -48,7 +48,7 @@ def loadPlugin(pluginID, *args, **kwargs):
 
 ########################################################################################################################
 
-def runKMeans(data, k, initMethod):
+def runKMeans(data, k, initMethod, distance):
     """
     Runs the k-Means clustering algorithm given the loaded data set, the number of clusters k and the initialization
     method.
@@ -57,7 +57,7 @@ def runKMeans(data, k, initMethod):
     :param initMethod: number of clusters
     :return: result of k-means
     """
-    KMeans = loadPlugin('caleydo-clustering-kmeans', data, k, initMethod)
+    KMeans = loadPlugin('caleydo-clustering-kmeans', data, k, initMethod, distance)
     # and run the kmeans extension
     centroids, labels, clusterLabels = KMeans()
     # clusterLabels, clusterDists = KMeans.getDistsPerCentroid()
@@ -108,8 +108,8 @@ def runAffinityPropagation(data, damping, factor, preference, distance):
 
 ########################################################################################################################
 
-def runFuzzy(data, numClusters, m, threshold):
-    Fuzzy = loadPlugin('caleydo-clustering-fuzzy', data, numClusters, m, threshold)
+def runFuzzy(data, numClusters, m, threshold, distance):
+    Fuzzy = loadPlugin('caleydo-clustering-fuzzy', data, numClusters, m, threshold, distance)
 
     centroids, clusterLabels, partitionMatrix, maxProb = Fuzzy()
 

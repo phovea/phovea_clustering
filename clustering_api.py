@@ -15,18 +15,19 @@ app = flask.Flask(__name__)
 
 ########################################################################################################################
 
-@app.route('/kmeans/<k>/<initMethod>/<datasetID>')
-def kmeansClustering(k, initMethod, datasetID):
+@app.route('/kmeans/<k>/<initMethod>/<distance>/<datasetID>')
+def kmeansClustering(k, initMethod, distance, datasetID):
     """
     Access k-means clustering plugin.
     :param k: number of clusters
     :param initMethod:  initialization method for initial clusters
+    :param distance: distance measurement
     :param datasetID:  identifier of data set
     :return: jsonified output
     """
     try:
         data = loadData(datasetID)
-        response = runKMeans(data, int(k), initMethod)
+        response = runKMeans(data, int(k), initMethod, distance)
         return flask.jsonify(response)
     except:
         return flask.jsonify({})
@@ -72,18 +73,19 @@ def affinityPropagationClustering(damping, factor, preference, distance, dataset
 
 ########################################################################################################################
 
-@app.route('/fuzzy/<numClusters>/<m>/<threshold>/<datasetID>')
-def fuzzyClustering(numClusters, m, threshold, datasetID):
+@app.route('/fuzzy/<numClusters>/<m>/<threshold>/<distance>/<datasetID>')
+def fuzzyClustering(numClusters, m, threshold, distance, datasetID):
     """
     :param numClusters:
     :param m:
     :param threshold:
+    :param distance:
     :param datasetID:
     :return:
     """
     try:
         data = loadData(datasetID)
-        response = runFuzzy(data, int(numClusters), float(m), float(threshold))
+        response = runFuzzy(data, int(numClusters), float(m), float(threshold), distance)
         return flask.jsonify(response)
     except:
         return flask.jsonify({})

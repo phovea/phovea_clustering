@@ -205,12 +205,12 @@ def _plugin_initialize():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def create(data, numCluster, m, threshold):
+def create(data, numCluster, m, threshold, distance):
     """
     by convention contain a factory called create returning the extension implementation
     :return:
     """
-    return Fuzzy(data, numCluster, m, threshold)
+    return Fuzzy(data, numCluster, m, threshold, distance)
 
 ########################################################################################################################
 
