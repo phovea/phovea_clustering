@@ -1,19 +1,18 @@
-__author__ = 'Michael Kern'
-__version__ = '0.0.1'
-__email__ = 'kernm@in.tum.de'
-
 ########################################################################################################################
 # libraries
 
 # module to load own configurations
 import phovea_server.config
+import numpy as np
+from clustering_util import similarity_measurementmatrix
+from timeit import default_timer as timer
 
 # request config if needed for the future
 config = phovea_server.config.view('caleydo-clustering')
 
-import numpy as np
-from clustering_util import similarityMeasurementMatrix
-from timeit import default_timer as timer
+__author__ = 'Michael Kern'
+__version__ = '0.0.1'
+__email__ = 'kernm@in.tum.de'
 
 
 ########################################################################################################################
@@ -26,13 +25,13 @@ class AffinityPropagation:
   Returns the centroids and labels / stratification of each row belonging to one cluster.
   """
 
-  def __init__(self, obs, damping=0.5, factor=1.0, prefMethod='minimum', distance='euclidean'):
+  def __init__(self, obs, damping=0.5, factor=1.0, pref_method='minimum', distance='euclidean'):
     """
     Initializes the algorithm.
     :param obs: genomic data / matrix
     :param damping: controls update process to dampen oscillations
     :param factor: controls the preference value (influences number of clusters)
-    :param prefMethod: all points are chosen equally with a given preference (median or minimum of similarity matrix)
+    :param pref_method: all points are chosen equally with a given preference (median or minimum of similarity matrix)
     :return:
     """
     self.__n = np.shape(obs)[0]
@@ -42,7 +41,7 @@ class AffinityPropagation:
     # variables influencing output of clustering algorithm
     self.__damping = damping
     self.__factor = factor
-    self.__prevMethod = prefMethod
+    self.__prev_method = pref_method
 
     # similarity matrix
     self.__S = np.zeros((self.__n, self.__n))
@@ -51,17 +50,17 @@ class AffinityPropagation:
     # responsibility matrix
     self.__R = np.zeros((self.__n, self.__n))
 
-    self.minValue = np.finfo(np.float).min
+    self.min_value = np.finfo(np.float).min
 
-    # self.__mx1 = np.full(self.__n, self.minValue)
-    # self.__mx2 = np.full(self.__n, self.minValue)
+    # self.__mx1 = np.full(self.__n, self.min_value)
+    # self.__mx2 = np.full(self.__n, self.min_value)
 
     self.__idx = np.zeros(self.__n)
 
     # set similarity computation
     self.__distance = distance
 
-    self.__computeSimilarity()
+    self.__compute_similarity()
 
   # ------------------------------------------------------------------------------------------------------------------
 
@@ -73,20 +72,20 @@ class AffinityPropagation:
 
   # ------------------------------------------------------------------------------------------------------------------
 
-  def __computeSimilarity(self):
+  def __compute_similarity(self):
     """
     Compute the similarity matrix from the original observation matrix and set preference of each element.
-    :return: Similarity matrix
+    :return: _similarity matrix
     """
     # compute distance matrix containing the negative sq euclidean distances -|| xi - xj ||**2
-    self.__S = -similarityMeasurementMatrix(self.__obs, self.__distance)
+    self.__S = -similarity_measurementmatrix(self.__obs, self.__distance)
 
     # determine the preferences S(k,k) to control the output of clusters
     pref = 0
     # could be median or minimum
-    if self.__prevMethod == 'median':
+    if self.__prev_method == 'median':
       pref = float(np.median(self.__S)) * self.__factor
-    elif self.__prevMethod == 'minimum':
+    elif self.__prev_method == 'minimum':
       pref = np.min(self.__S) * self.__factor
     else:
       raise AttributeError
@@ -102,171 +101,171 @@ class AffinityPropagation:
     or the maximum number of iterations (200) is reached.
     :return:
     """
-    maxIter = 200
-    maxConvIter = 100
+    max_iter = 200
+    max_conv_iter = 100
 
     # sum all decisions for exemplars per round
-    decisionSum = np.zeros(self.__n)
+    decision_sum = np.zeros(self.__n)
     # collect decisions for one exemplar per iteration round
-    decisionIter = np.zeros((maxConvIter, self.__n))
+    decision_iter = np.zeros((max_conv_iter, self.__n))
     # counter for decisions (= consider data element as exemplar in each algorithm iteration)
-    decisionCounter = maxConvIter
+    decision_counter = max_conv_iter
     # indicates if algorithm has converged
-    isConverged = False
+    is_converged = False
 
     centroids = []
     it = 0
-    clusterI = []
+    cluster_i = []
 
     # helpful variables (that do not need recomputation)
-    indexDiag = np.arange(self.__n)
-    indicesDiag = np.diag_indices_from(self.__R)
-    newA = np.zeros((self.__n, self.__n))
-    newR = np.zeros((self.__n, self.__n))
+    index_diag = np.arange(self.__n)
+    indices_diag = np.diag_indices_from(self.__R)
+    new_a = np.zeros((self.__n, self.__n))
+    new_r = np.zeros((self.__n, self.__n))
 
-    for it in range(1, maxIter + 1):
+    for it in range(1, max_iter + 1):
 
       # ----------------------------------------------------------------------------------------------------------
 
       # compute responsibility matrix
-      AS = self.__A + self.__S
+      m_as = self.__A + self.__S
 
-      maxY = np.max(AS, axis=1)
-      indexY = np.argmax(AS, axis=1)
+      max_y = np.max(m_as, axis=1)
+      index_y = np.argmax(m_as, axis=1)
 
-      # set values of maxima to zero in AS matrix
-      AS[indexDiag, indexY] = self.minValue
+      # set values of maxima to zero in m_as matrix
+      m_as[index_diag, index_y] = self.min_value
 
       # look for second maxima
-      maxY2 = np.max(AS, axis=1)
+      max_y2 = np.max(m_as, axis=1)
 
       # perform responsibility update
       for ii in range(self.__n):
         # s(i, k) - max({ a(i, k') + s(i, k') })
-        newR[ii] = self.__S[ii] - maxY[ii]
+        new_r[ii] = self.__S[ii] - max_y[ii]
 
       # subtract second maximum from row -> column entry with maximum value
-      newR[indexDiag, indexY] = self.__S[indexDiag, indexY] - maxY2[indexDiag]
+      new_r[index_diag, index_y] = self.__S[index_diag, index_y] - max_y2[index_diag]
 
       # dampen values
-      # self.__R = self.__damping * self.__R + (1 - self.__damping) * newR
+      # self.__R = self.__damping * self.__R + (1 - self.__damping) * new_r
       self.__R *= self.__damping
-      self.__R += (1 - self.__damping) * newR
+      self.__R += (1 - self.__damping) * new_r
 
       # ----------------------------------------------------------------------------------------------------------
 
       # compute availability matrix
       # cut out negative elements
       # TODO! slow because of copy operation
-      Rp = np.maximum(self.__R, 0)
+      rp = np.maximum(self.__R, 0)
 
       # write back all diagonal elements als self representatives
-      Rp[indicesDiag] = self.__R[indicesDiag]
-      sumCols = np.sum(Rp, axis=0)
+      rp[indices_diag] = self.__R[indices_diag]
+      sum_cols = np.sum(rp, axis=0)
 
       # apply availability update
-      newA[:, ] = sumCols
-      newA -= Rp
+      new_a[:, ] = sum_cols
+      new_a -= rp
       # for ii in range(self.__n):
       #     # r(k, k) + sum(max(0, r(i',k))
-      #     newA[:, ii] = sumCols[ii] - Rp[:, ii]
+      #     new_a[:, ii] = sum_cols[ii] - Rp[:, ii]
 
-      diagA = np.diag(newA)
+      diag_a = np.diag(new_a)
       # take minimum of all the values in A, cut out all values above zero
-      # newA = np.minimum(newA, 0)
-      newA[newA > 0] = 0
-      newA[indicesDiag] = diagA[indexDiag]
+      # new_a = np.minimum(new_a, 0)
+      new_a[new_a > 0] = 0
+      new_a[indices_diag] = diag_a[index_diag]
 
       # dampen values
-      # self.__A = self.__damping * self.__A + (1 - self.__damping) * newA
+      # self.__A = self.__damping * self.__A + (1 - self.__damping) * new_a
       self.__A *= self.__damping
-      self.__A += (1 - self.__damping) * newA
+      self.__A += (1 - self.__damping) * new_a
 
       # ----------------------------------------------------------------------------------------------------------
 
       # find exemplars for new clusters
       # old version which is slower
       # E = self.__R + self.__A
-      # diagE = np.diag(E)
+      # diag_e = np.diag(E)
 
       # take the diagonal elements of the create matrix E
-      diagE = np.diag(self.__R) + np.diag(self.__A)
+      diag_e = np.diag(self.__R) + np.diag(self.__A)
 
       # all elements > 0 are considered to be an appropriate exemplar for the dataset
-      clusterI = np.argwhere(diagE > 0).flatten()
+      cluster_i = np.argwhere(diag_e > 0).flatten()
 
       # count the number of clusters
-      numClusters = len(clusterI)
+      num_clusters = len(cluster_i)
 
       # ----------------------------------------------------------------------------------------------------------
 
-      decisionCounter += 1
-      if decisionCounter >= maxConvIter:
-        decisionCounter = 0
+      decision_counter += 1
+      if decision_counter >= max_conv_iter:
+        decision_counter = 0
 
       # subtract outcome of previous iteration (< 100) from the total sum of the decisions
-      decisionSum -= decisionIter[decisionCounter]
+      decision_sum -= decision_iter[decision_counter]
 
-      decisionIter[decisionCounter].fill(0)
-      decisionIter[decisionCounter][clusterI] = 1
+      decision_iter[decision_counter].fill(0)
+      decision_iter[decision_counter][cluster_i] = 1
 
       # compute sum of decisions for each element being a exemplar
-      decisionSum += decisionIter[decisionCounter]
+      decision_sum += decision_iter[decision_counter]
 
       # check for convergence
-      if it >= maxConvIter or it >= maxIter:
-        isConverged = True
+      if it >= max_conv_iter or it >= max_iter:
+        is_converged = True
 
         for ii in range(self.__n):
           # if element is considered to be an exemplar in at least one iterations
           # and total of decisions in the last 100 iterations is not 100 --> no convergence
-          if decisionSum[ii] != 0 and decisionSum[ii] != maxConvIter:
-            isConverged = False
+          if decision_sum[ii] != 0 and decision_sum[ii] != max_conv_iter:
+            is_converged = False
             break
 
-        if isConverged and numClusters > 0:
+        if is_converged and num_clusters > 0:
           break
 
     # --------------------------------------------------------------------------------------------------------------
 
     # obtain centroids
-    centroids = self.__obs[clusterI]
+    centroids = self.__obs[cluster_i]
 
-    # find maximum columns in AS matrix to assign elements to clusters / exemplars
+    # find maximum columns in m_as matrix to assign elements to clusters / exemplars
     # fill A with negative values
-    self.__A.fill(self.minValue)
+    self.__A.fill(self.min_value)
     # set values of clusters to zero (as we only want to regard these values
-    self.__A[:, clusterI] = 0.0
+    self.__A[:, cluster_i] = 0.0
     # fill diagonal of similarity matrix to zero (remove preferences)
     np.fill_diagonal(self.__S, 0.0)
 
-    # compute AS matrix
-    AS = self.__A + self.__S
+    # compute m_as matrix
+    m_as = self.__A + self.__S
     # since values are < 0, look for the maximum number in each row and return its column index
-    self.__idx = np.argmax(AS, axis=1)
+    self.__idx = np.argmax(m_as, axis=1)
 
-    clusterI = clusterI.tolist()
-    clusterLabels = [[] for _ in range(numClusters)]
+    cluster_i = cluster_i.tolist()
+    cluster_labels = [[] for _ in range(num_clusters)]
 
     # create labels per cluster
     for ii in range(self.__n):
-      index = clusterI.index(self.__idx[ii])
+      index = cluster_i.index(self.__idx[ii])
       self.__idx[ii] = index
-      clusterLabels[index].append(ii)
+      cluster_labels[index].append(ii)
 
     # return sorted cluster labels (that's why we call compute cluster distances, might be redundant)
-    # for ii in range(numClusters):
-    #     clusterLabels[ii], _ = computeClusterInternDistances(self.__obs, clusterLabels[ii])
+    # for ii in range(num_clusters):
+    #     cluster_labels[ii], _ = compute_cluster_intern_distances(self.__obs, cluster_labels[ii])
 
-    # if isConverged:
+    # if is_converged:
     #     print('Algorithm has converged after {} iterations'.format(it))
     # else:
     #     print('Algorithm has not converged after 200 iterations')
     #
-    # print('Number of detected clusters {}'.format(numClusters))
+    # print('Number of detected clusters {}'.format(num_clusters))
     # print('Centroids: {}'.format(centroids))
 
-    return centroids.tolist(), self.__idx.tolist(), clusterLabels
+    return centroids.tolist(), self.__idx.tolist(), cluster_labels
 
 
 ########################################################################################################################

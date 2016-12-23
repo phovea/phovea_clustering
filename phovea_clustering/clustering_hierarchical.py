@@ -1,25 +1,26 @@
-__author__ = 'Michael Kern'
-__version__ = '0.0.3'
-__email__ = 'kernm@in.tum.de'
-
 ########################################################################################################################
 # libraries
 
 # module to load own configurations
 import phovea_server.config
 
-# request config if needed for the future
-config = phovea_server.config.view('caleydo-clustering')
 
 # library to conduct matrix/vector calculus
 import numpy as np
 # fastest distance computation by scipy
-import scipy.spatial as spt
+# import scipy.spatial as spt
 
 # utility functions for clustering and creating the dendrogram trees
 from clustering_util import BinaryNode, BinaryTree
-from clustering_util import similarityMeasurementMatrix
-from clustering_util import computeClusterInternDistances
+from clustering_util import similarity_measurement_matrix
+from clustering_util import compute_cluster_intern_distances
+from clustering_util import cut_json_tree_by_clusters
+
+__author__ = 'Michael Kern'
+__version__ = '0.0.3'
+__email__ = 'kernm@in.tum.de'
+# request config if needed for the future
+config = phovea_server.config.view('caleydo-clustering')
 
 
 ########################################################################################################################
@@ -43,36 +44,36 @@ class Hierarchical(object):
     # remove all NaNs in data
     self.__obs = np.nan_to_num(obs)
 
-    numGenes = np.shape(self.__obs)[0]
-    self.__n = numGenes
+    num_genes = np.shape(self.__obs)[0]
+    self.__n = num_genes
 
     # check if dimension is 2D
     # if self.__obs.ndim == 2:
     #     # obtain number of observations (rows)
-    #     numGenes, _ = np.shape(self.__obs)
-    #     self.__n = numGenes
+    #     num_genes, _ = np.shape(self.__obs)
+    #     self.__n = num_genes
 
     # else:
     #     print("[Error]:\tdata / observations must be 2D. 1D observation arrays are not supported")
-    #     raise AttributeError
+    #     raise Attribute_error
 
     # distance measurement
     self.__distance = distance
 
     # distance / proximity matrix
     self.__d = []
-    self.__computeProximityMatrix()
+    self.__compute_proximity_matrix()
     # dictionary mapping the string id (i,j,k,...) of clusters to corresponding index in matrix
-    self.__idMap = {}
-    # inverse mapping of idMap --> returns the string id given a certain index
-    self.__keyMap = {}
+    self.__id_map = {}
+    # inverse mapping of id_map --> returns the string id given a certain index
+    self.__key_map = {}
     # contains actual index of all clusters, old clusters are from [0, n - 1], new clusters have indices in range
     # [n, 2n - 1]
-    self.__clusterMap = {}
+    self.__cluster_map = {}
     for ii in range(self.__n):
-      self.__idMap[str(ii)] = ii
-      self.__keyMap[ii] = str(ii)
-      self.__clusterMap[str(ii)] = ii
+      self.__id_map[str(ii)] = ii
+      self.__key_map[ii] = str(ii)
+      self.__cluster_map[str(ii)] = ii
 
     # linkage method for hierarchical clustering
     self.__method = method
@@ -97,11 +98,11 @@ class Hierarchical(object):
 
   # ------------------------------------------------------------------------------------------------------------------
 
-  def __getCoefficients(self, clusterI, clusterJ):
+  def __get_coefficients(self, cluster_i, cluster_j):
     """
     Compute the coefficients for the Lance-Williams algorithm
-    :param clusterI:
-    :param clusterJ:
+    :param cluster_i:
+    :param cluster_j:
     :return:
     """
     # TODO! use hash map for storing numbers instead of computing them every time
@@ -115,35 +116,35 @@ class Hierarchical(object):
       return 0.5, 0.5, -0.25, 0
 
     # TODO! ATTENTION! average method should compute the cluster centroids using the average
-    # TODO! || clusterI - clusterJ || ** 2
+    # TODO! || cluster_i - cluster_j || ** 2
     elif self.__method == 'average':
-      nI = np.float(clusterI.count(',') + 1)
-      nJ = np.float(clusterJ.count(',') + 1)
-      sumN = nI + nJ
-      return (nI / sumN), (nJ / sumN), 0, 0
+      n_i = np.float(cluster_i.count(',') + 1)
+      n_j = np.float(cluster_j.count(',') + 1)
+      sum_n = n_i + n_j
+      return (n_i / sum_n), (n_j / sum_n), 0, 0
 
     # TODO! ATTENTION! centroid method should compute the cluster centroids using the mean
-    # TODO! || clusterI - clusterJ || ** 2
+    # TODO! || cluster_i - cluster_j || ** 2
     elif self.__method == 'centroid':
-      nI = np.float(clusterI.count(',') + 1)
-      nJ = np.float(clusterJ.count(',') + 1)
-      sumN = nI + nJ
-      return (nI / sumN), (nJ / sumN), -((nI * nJ) / (sumN ** 2)), 0
+      n_i = np.float(cluster_i.count(',') + 1)
+      n_j = np.float(cluster_j.count(',') + 1)
+      sum_n = n_i + n_j
+      return (n_i / sum_n), (n_j / sum_n), -((n_i * n_j) / (sum_n ** 2)), 0
 
     # TODO! Support ward method
-    # TODO! (|clusterI| * |clusterJ|) / (|clusterI| + |clusterJ) * || clusterI - clusterJ || ** 2
+    # TODO! (|cluster_i| * |cluster_j|) / (|cluster_i| + |cluster_j) * || cluster_i - cluster_j || ** 2
     # elif self.__method == 'ward':
-    #     nI = np.float(clusterI.count(',') + 1)
-    #     nJ = np.float(clusterJ.count(',') + 1)
-    #     nK = np.float(clusterK.count(',') + 1)
-    #     sumN = nI + nJ + nK
-    #     return (nI + nK) / sumN, (nJ + nK) / sumN, -nK / sumN, 0
+    #     n_i = np.float(cluster_i.count(',') + 1)
+    #     n_j = np.float(cluster_j.count(',') + 1)
+    #     n_k = np.float(cluster_k.count(',') + 1)
+    #     sum_n = n_i + n_j + n_k
+    #     return (n_i + n_k) / sum_n, (n_j + n_k) / sum_n, -n_k / sum_n, 0
     else:
       raise AttributeError
 
   # ------------------------------------------------------------------------------------------------------------------
 
-  def __computeProximityMatrix(self):
+  def __compute_proximity_matrix(self):
     """
     Compute the proximity of each observation and store the results in a nxn matrix
     :return:
@@ -155,44 +156,44 @@ class Hierarchical(object):
     # compute euclidean distance
     # TODO! implement generic distance functions
     # TODO! look for an alternative proximity analysis without computing all distances
-    self.__d = similarityMeasurementMatrix(self.__obs, self.__distance)
+    self.__d = similarity_measurement_matrix(self.__obs, self.__distance)
 
     # get number of maximum value of float
-    self.__maxValue = self.__d.max() + 1
+    self.__max_value = self.__d.max() + 1
 
     # fill diagonals with max value to exclude them from min dist process
     # TODO! operate only on upper triangle matrix of distance matrix
-    np.fill_diagonal(self.__d, self.__maxValue)
+    np.fill_diagonal(self.__d, self.__max_value)
 
     # print('\t-> finished.')
 
   # ------------------------------------------------------------------------------------------------------------------
 
-  def __getMatrixMinimumIndices(self):
+  def __get_matrix_minimum_indices(self):
     """
     Searches for the minimum distance in the distance matrix
     :return: indices of both clusters having the smallest distance
     """
-    minDist = self.__d.min()
-    minList = np.argwhere(self.__d == minDist)
+    min_dist = self.__d.min()
+    min_list = np.argwhere(self.__d == min_dist)
 
-    minI, minJ = 0, 0
+    min_i, min_j = 0, 0
 
     # look for indices, where i < j
     # TODO! for the future --> use upper triangle matrix
-    for ii in range(len(minList)):
-      minI, minJ = minList[ii]
-      if minI < minJ:
+    for ii in range(len(min_list)):
+      min_i, min_j = min_list[ii]
+      if min_i < min_j:
         break
 
-    if minI == minJ:
+    if min_i == min_j:
       print("ERROR")
 
-    return self.__keyMap[minI], self.__keyMap[minJ], minDist
+    return self.__key_map[min_i], self.__key_map[min_j], min_dist
 
   # ------------------------------------------------------------------------------------------------------------------
 
-  def __deleteClusters(self, i, j):
+  def __delete_clusters(self, i, j):
     """
     Reorders and reduces the matrix to insert the new cluster formed of cluster i and j
     and its distance values, and removes the old clusters by cutting the last row.
@@ -200,32 +201,32 @@ class Hierarchical(object):
     :param j: cluster index j
     :return:
     """
-    idI = self.__idMap[str(i)]
-    idJ = self.__idMap[str(j)]
+    id_i = self.__id_map[str(i)]
+    id_j = self.__id_map[str(j)]
 
-    minID = min(idI, idJ)
-    maxID = max(idI, idJ)
+    # min_id = min(id_i, id_j)
+    max_id = max(id_i, id_j)
 
     # now set column max ID to last column -> swap last and i column
-    lastRow = self.__d[self.__n - 1]
-    self.__d[maxID] = lastRow
-    self.__d[:, maxID] = self.__d[:, (self.__n - 1)]
+    last_row = self.__d[self.__n - 1]
+    self.__d[max_id] = last_row
+    self.__d[:, max_id] = self.__d[:, (self.__n - 1)]
 
-    # set key of last column (cluster) to column of the cluster with index maxID
-    key = self.__keyMap[self.__n - 1]
-    self.__idMap[key] = maxID
-    self.__keyMap[maxID] = key
+    # set key of last column (cluster) to column of the cluster with index max_id
+    key = self.__key_map[self.__n - 1]
+    self.__id_map[key] = max_id
+    self.__key_map[max_id] = key
 
     # delete entries in id and key map --> not required anymore
     try:
-      del self.__idMap[i]
-      del self.__idMap[j]
-      del self.__keyMap[self.__n - 1]
+      del self.__id_map[i]
+      del self.__id_map[j]
+      del self.__key_map[self.__n - 1]
     except KeyError:
-      print("\nERROR: Key {} not found in idMap".format(j))
-      print("ERROR: Previous key: {} in idMap".format(i))
+      print("\nERROR: Key {} not found in id_map".format(j))
+      print("ERROR: Previous key: {} in id_map".format(i))
       print("Given keys: ")
-      for key in self.__idMap:
+      for key in self.__id_map:
         print(key)
       return
 
@@ -235,7 +236,7 @@ class Hierarchical(object):
 
   # ------------------------------------------------------------------------------------------------------------------
 
-  def __mergeClusters(self, i, j):
+  def __merge_clusters(self, i, j):
     """
     Merges cluster i and j, computes the new ID and distances of the newly formed cluster
     and stores required information
@@ -243,40 +244,40 @@ class Hierarchical(object):
     :param j: cluster index j
     :return:
     """
-    idI = self.__idMap[str(i)]
-    idJ = self.__idMap[str(j)]
+    id_i = self.__id_map[str(i)]
+    id_j = self.__id_map[str(j)]
 
-    minID = min(idI, idJ)
-    maxID = max(idI, idJ)
+    min_id = min(id_i, id_j)
+    max_id = max(id_i, id_j)
 
     # use Lance-Williams formula to compute linkages
-    DKI = self.__d[:, minID]
-    DKJ = self.__d[:, maxID]
-    DIJ = self.__d[minID, maxID]
-    distIJ = np.abs(DKI - DKJ)
+    dki = self.__d[:, min_id]
+    dkj = self.__d[:, max_id]
+    dij = self.__d[min_id, max_id]
+    dist_ij = np.abs(dki - dkj)
 
     # compute coefficients
-    ai, aj, b, y = self.__getCoefficients(i, j)
+    ai, aj, b, y = self.__get_coefficients(i, j)
 
-    newEntries = ai * DKI + aj * DKJ + b * DIJ + y * distIJ
-    newEntries[minID] = self.__maxValue
-    newEntries[maxID] = self.__maxValue
+    new_entries = ai * dki + aj * dkj + b * dij + y * dist_ij
+    new_entries[min_id] = self.__max_value
+    new_entries[max_id] = self.__max_value
 
     # add new column and row
-    self.__d[minID] = newEntries
-    self.__d[:, minID] = newEntries
+    self.__d[min_id] = new_entries
+    self.__d[:, min_id] = new_entries
 
-    idIJ = minID
-    newKey = i + ',' + j
-    self.__idMap[newKey] = idIJ
-    self.__keyMap[idIJ] = newKey
-    self.__clusterMap[newKey] = len(self.__clusterMap)
+    id_ij = min_id
+    new_key = i + ',' + j
+    self.__id_map[new_key] = id_ij
+    self.__key_map[id_ij] = new_key
+    self.__cluster_map[new_key] = len(self.__cluster_map)
 
     # delete old clusters
-    self.__deleteClusters(i, j)
+    self.__delete_clusters(i, j)
 
     # count number of elements
-    return newKey.count(',') + 1
+    return new_key.count(',') + 1
 
   # ------------------------------------------------------------------------------------------------------------------
 
@@ -291,66 +292,66 @@ class Hierarchical(object):
 
     # resulting matrix containing information Z[i,x], x=0: cluster i, x=1: cluster j, x=2: dist(i,j), x=3: num(i,j)
     runs = self.__n - 1
-    Z = np.array([[0 for _ in range(4)] for _ in range(runs)], dtype=np.float)
+    z = np.array([[0 for _ in range(4)] for _ in range(runs)], dtype=np.float)
 
     while m < runs:
       m += 1
 
-      i, j, distIJ = self.__getMatrixMinimumIndices()
-      numIJ = self.__mergeClusters(i, j)
+      i, j, dist_ij = self.__get_matrix_minimum_indices()
+      num_ij = self.__merge_clusters(i, j)
 
-      clusterI, clusterJ = self.__clusterMap[i], self.__clusterMap[j]
-      Z[m - 1] = [int(min(clusterI, clusterJ)), int(max(clusterI, clusterJ)), np.float(distIJ), int(numIJ)]
+      cluster_i, cluster_j = self.__cluster_map[i], self.__cluster_map[j]
+      z[m - 1] = [int(min(cluster_i, cluster_j)), int(max(cluster_i, cluster_j)), np.float(dist_ij), int(num_ij)]
 
     # reset number n to length of first dimension (number of genes)
     self.__n = np.shape(self.__obs)[0]
 
-    self.__tree = self.generateTree(Z)
-    return Z.tolist()
+    self.__tree = self.generate_tree(z)
+    return z.tolist()
 
   # ------------------------------------------------------------------------------------------------------------------
 
-  def generateTree(self, linkageMatrix):
+  def generate_tree(self, linkage_matrix):
     """
     Computes the dendrogram tree for a given linkage matrix.
-    :param linkageMatrix:
+    :param linkage_matrix:
     :return:
     """
     self.__tree = None
 
-    treeMap = {}
-    numTrees = len(linkageMatrix)
+    tree_map = {}
+    num_trees = len(linkage_matrix)
 
-    for ii in range(numTrees):
-      entry = linkageMatrix[ii]
-      currentID = self.__n + ii
-      leftIndex, rightIndex, value, num = int(entry[1]), int(entry[0]), entry[2], int(entry[3])
+    for ii in range(num_trees):
+      entry = linkage_matrix[ii]
+      current_id = self.__n + ii
+      left_index, right_index, value = int(entry[1]), int(entry[0]), entry[2], int(entry[3])
       left = right = None
 
-      if leftIndex < self.__n:
-        left = BinaryNode(self.__obs[leftIndex].tolist(), leftIndex, 1, None, None)
+      if left_index < self.__n:
+        left = BinaryNode(self.__obs[left_index].tolist(), left_index, 1, None, None)
       else:
-        left = treeMap[leftIndex]
+        left = tree_map[left_index]
 
-      if rightIndex < self.__n:
-        right = BinaryNode(self.__obs[rightIndex].tolist(), rightIndex, 1, None, None)
+      if right_index < self.__n:
+        right = BinaryNode(self.__obs[right_index].tolist(), right_index, 1, None, None)
       else:
-        right = treeMap[rightIndex]
+        right = tree_map[right_index]
 
       if isinstance(left, BinaryNode) and isinstance(right, BinaryNode):
-        treeMap[currentID] = BinaryTree(left, right, currentID, value)
+        tree_map[current_id] = BinaryTree(left, right, current_id, value)
       elif isinstance(left, BinaryNode):
-        treeMap[currentID] = right.addNode(left, currentID, value)
-        del treeMap[rightIndex]
+        tree_map[current_id] = right.add_node(left, current_id, value)
+        del tree_map[right_index]
       elif isinstance(right, BinaryNode):
-        treeMap[currentID] = left.addNode(right, currentID, value)
-        del treeMap[leftIndex]
+        tree_map[current_id] = left.add_node(right, current_id, value)
+        del tree_map[left_index]
       else:
-        treeMap[currentID] = left.merge(right, currentID, value)
-        del treeMap[rightIndex]
-        del treeMap[leftIndex]
+        tree_map[current_id] = left.merge(right, current_id, value)
+        del tree_map[right_index]
+        del tree_map[left_index]
 
-    self.__tree = treeMap[numTrees + self.__n - 1]
+    self.__tree = tree_map[num_trees + self.__n - 1]
     return self.__tree
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -358,10 +359,8 @@ class Hierarchical(object):
 
 ########################################################################################################################
 
-from clustering_util import cutJsonTreeByClusters
 
-
-def getClusters(k, obs, dendrogram, sorted=True):
+def get_clusters(k, obs, dendrogram, sorted=True):
   """
   First implementation to cut dendrogram tree automatically by choosing nodes having the greatest node values
   or rather distance to the other node / potential cluster
@@ -374,29 +373,29 @@ def getClusters(k, obs, dendrogram, sorted=True):
   n = obs.shape[0]
 
   if isinstance(dendrogram, BinaryTree):
-    clusterLabels = dendrogram.cutTreeByClusters(k)
+    cluster_labels = dendrogram.cut_tree_by_clusters(k)
   else:
-    clusterLabels = cutJsonTreeByClusters(dendrogram, k)
+    cluster_labels = cut_json_tree_by_clusters(dendrogram, k)
 
-  clusterCentroids = []
+  cluster_centroids = []
   labels = np.zeros(n, dtype=np.int)
-  clusterID = 0
+  cluster_id = 0
 
-  for ii in range(len(clusterLabels)):
-    cluster = clusterLabels[ii]
-    subObs = obs[cluster]
-    clusterCentroids.append(np.mean(subObs, axis=0).tolist())
+  for ii in range(len(cluster_labels)):
+    cluster = cluster_labels[ii]
+    sub_obs = obs[cluster]
+    cluster_centroids.append(np.mean(sub_obs, axis=0).tolist())
 
     for id in cluster:
-      labels[id] = clusterID
+      labels[id] = cluster_id
 
     # sort labels according to their distance
     if sorted:
-      clusterLabels[ii], _ = computeClusterInternDistances(obs, cluster)
+      cluster_labels[ii], _ = compute_cluster_intern_distances(obs, cluster)
 
-    clusterID += 1
+    cluster_id += 1
 
-  return clusterCentroids, clusterLabels, labels.tolist()
+  return cluster_centroids, cluster_labels, labels.tolist()
 
 
 ########################################################################################################################
@@ -420,18 +419,16 @@ def create(data, method, distance):
 
 
 ########################################################################################################################
-
-from timeit import default_timer as timer
-from scipy.cluster.hierarchy import linkage, leaves_list
-
-if __name__ == '__main__':
+def _main():
+  from timeit import default_timer as timer
+  # from scipy.cluster.hierarchy import linkage, leaves_list
 
   np.random.seed(200)
   # data = np.array([[1,2,3],[5,4,5],[3,2,2],[8,8,7],[9,6,7],[2,3,4]])
   data = np.array([1, 1.1, 5, 8, 5.2, 8.3])
 
-  timeMine = 0
-  timeTheirs = 0
+  time_mine = 0
+  time_theirs = 0
 
   n = 10
 
@@ -441,27 +438,30 @@ if __name__ == '__main__':
     s1 = timer()
     hier = Hierarchical(data, 'complete')
     # s = time.time()
-    linkageMatrix = hier.run()
+    linkage_matrix = hier.run()
     e1 = timer()
-    print(linkageMatrix)
-    tree = hier.generateTree(linkageMatrix)
-    # print(tree.getLeaves())
+    print(linkage_matrix)
+    tree = hier.generate_tree(linkage_matrix)
+    # print(tree.get_leaves())
     # print(tree.jsonify())
-    # print(hier.getClusters(3))
+    # print(hier.get_clusters(3))
     import json
 
-    jsonTree = json.loads(tree.jsonify())
-    getClusters(3, data, jsonTree)
+    json_tree = json.loads(tree.jsonify())
+    get_clusters(3, data, json_tree)
 
     s2 = timer()
-    linkageMatrix2 = linkage(data, 'complete')
-    # print(leaves_list(linkageMatrix2))
+    # linkage_matrix2 = linkage(data, 'complete')
+    # print(leaves_list(linkage_matrix2))
     e2 = timer()
 
-    timeMine += e1 - s1
-    timeTheirs += e2 - s2
+    time_mine += e1 - s1
+    time_theirs += e2 - s2
 
-  # print(linkageMatrix)
-  # print(linkageMatrix2)
-  print('mine: {}'.format(timeMine / n))
-  print('theirs: {}'.format(timeTheirs / n))
+  # print(linkage_matrix)
+  # print(linkage_matrix2)
+  print('mine: {}'.format(time_mine / n))
+  print('theirs: {}'.format(time_theirs / n))
+
+if __name__ == '__main__':
+  _main()
