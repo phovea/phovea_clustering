@@ -13,7 +13,7 @@ def loadData(datasetID):
     :param datasetID: identifier
     :return: array of the genomic data
     """
-    import caleydo_server.dataset as dt
+    import phovea_server.dataset as dt
     # obtain Caleydo dataset from ID
     dataset = dt.get(datasetID)
     # choose loaded attribute and load raw data in numpy format
@@ -34,9 +34,9 @@ def loadPlugin(pluginID, *args, **kwargs):
     :param **kwargs: additional arguments
     :return: plugin
     """
-    import caleydo_server.plugin
+    import phovea_server.plugin
     # obtain all plugins with 'pluginID' extension
-    plugins = caleydo_server.plugin.list('clustering')
+    plugins = phovea_server.plugin.list('clustering')
     # choose plugin with given ID
     for plugin in plugins:
         if plugin.id == pluginID:

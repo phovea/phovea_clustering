@@ -6,9 +6,9 @@ __email__ = 'kernm@in.tum.de'
 # libraries
 
 # module to load own configurations
-import caleydo_server.config
+import phovea_server.config
 # request config if needed in the future
-config = caleydo_server.config.view('caleydo-clustering')
+config = phovea_server.config.view('caleydo-clustering')
 
 # numpy important to conduct matrix/vector calculus
 import numpy as np

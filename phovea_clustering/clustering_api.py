@@ -6,12 +6,12 @@ __email__ = 'kernm@in.tum.de'
 # libraries
 
 # use flask library for server activities
-import flask
+from phovea_server import ns
 # load services (that are executed by the server when certain website is called)
 from clustering_service import *
 
 # create new flask application for hosting namespace
-app = flask.Flask(__name__)
+app = ns.Namespace(__name__)
 
 ########################################################################################################################
 
@@ -28,9 +28,9 @@ def kmeansClustering(k, initMethod, distance, datasetID):
     try:
         data = loadData(datasetID)
         response = runKMeans(data, int(k), initMethod, distance)
-        return flask.jsonify(response)
+        return ns.jsonify(response)
     except:
-        return flask.jsonify({})
+        return ns.jsonify({})
 
 ########################################################################################################################
 
@@ -47,9 +47,9 @@ def hierarchicalClustering(k, method, distance, datasetID):
     try:
         data = loadData(datasetID)
         response = runHierarchical(data, int(k), method, distance)
-        return flask.jsonify(response)
+        return ns.jsonify(response)
     except:
-        return flask.jsonify({})
+        return ns.jsonify({})
 
 ########################################################################################################################
 
@@ -67,9 +67,9 @@ def affinityPropagationClustering(damping, factor, preference, distance, dataset
     try:
         data = loadData(datasetID)
         response = runAffinityPropagation(data, float(damping), float(factor), preference, distance)
-        return flask.jsonify(response)
+        return ns.jsonify(response)
     except:
-        return flask.jsonify({})
+        return ns.jsonify({})
 
 ########################################################################################################################
 
@@ -86,9 +86,9 @@ def fuzzyClustering(numClusters, m, threshold, distance, datasetID):
     try:
         data = loadData(datasetID)
         response = runFuzzy(data, int(numClusters), float(m), float(threshold), distance)
-        return flask.jsonify(response)
+        return ns.jsonify(response)
     except:
-        return flask.jsonify({})
+        return ns.jsonify({})
 
 ########################################################################################################################
 
@@ -114,14 +114,14 @@ def getDistances(metric, datasetID, sorted):
     labels = []
     externLabels = None
 
-    if 'group' in flask.request.values:
-        labels = loadAttribute(flask.request.values['group'], 'labels')
-        externLabels = loadAttribute(flask.request.values['group'], 'externLabels')
+    if 'group' in ns.request.values:
+        labels = loadAttribute(ns.request.values['group'], 'labels')
+        externLabels = loadAttribute(ns.request.values['group'], 'externLabels')
     else:
         return ''
 
     response = getClusterDistances(data, labels, metric, externLabels, sorted)
-    return flask.jsonify(response)
+    return ns.jsonify(response)
 
 ########################################################################################################################
 
@@ -129,13 +129,13 @@ def getDistances(metric, datasetID, sorted):
 def dendrogramClusters(numClusters, datasetID):
     data = loadData(datasetID)
 
-    if 'group' in flask.request.values:
-        dendrogram = loadAttribute(flask.request.values['group'], 'dendrogram')
+    if 'group' in ns.request.values:
+        dendrogram = loadAttribute(ns.request.values['group'], 'dendrogram')
     else:
         return ''
 
     response = getClustersFromDendrogram(data, dendrogram, int(numClusters))
-    return flask.jsonify(response)
+    return ns.jsonify(response)
 
 
 ########################################################################################################################
