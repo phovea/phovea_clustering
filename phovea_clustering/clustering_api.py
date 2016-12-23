@@ -1,14 +1,15 @@
-__author__ = 'Michael Kern'
-__version__ = '0.0.1'
-__email__ = 'kernm@in.tum.de'
-
 ########################################################################################################################
 # libraries
 
 # use flask library for server activities
 from phovea_server import ns
 # load services (that are executed by the server when certain website is called)
-from clustering_service import *
+from clustering_service import getClusterDistances, getClustersFromDendrogram, loadData, runAffinityPropagation, runFuzzy, runHierarchical, runKMeans
+
+
+__author__ = 'Michael Kern'
+__version__ = '0.0.1'
+__email__ = 'kernm@in.tum.de'
 
 # create new flask application for hosting namespace
 app = ns.Namespace(__name__)
@@ -16,19 +17,19 @@ app = ns.Namespace(__name__)
 
 ########################################################################################################################
 
-@app.route('/kmeans/<k>/<initMethod>/<distance>/<datasetID>')
-def kmeansClustering(k, initMethod, distance, datasetID):
+@app.route('/kmeans/<k>/<init_method>/<distance>/<dataset_id>')
+def kmeans_clustering(k, init_method, distance, dataset_id):
   """
   Access k-means clustering plugin.
   :param k: number of clusters
-  :param initMethod:  initialization method for initial clusters
+  :param init_method:  initialization method for initial clusters
   :param distance: distance measurement
-  :param datasetID:  identifier of data set
+  :param dataset_id:  identifier of data set
   :return: jsonified output
   """
   try:
-    data = loadData(datasetID)
-    response = runKMeans(data, int(k), initMethod, distance)
+    data = loadData(dataset_id)
+    response = runKMeans(data, int(k), init_method, distance)
     return ns.jsonify(response)
   except:
     return ns.jsonify({})
@@ -36,18 +37,18 @@ def kmeansClustering(k, initMethod, distance, datasetID):
 
 ########################################################################################################################
 
-@app.route('/hierarchical/<k>/<method>/<distance>/<datasetID>')
-def hierarchicalClustering(k, method, distance, datasetID):
+@app.route('/hierarchical/<k>/<method>/<distance>/<dataset_id>')
+def hierarchical_clustering(k, method, distance, dataset_id):
   """
   Access hierarchical clustering plugin.
   :param k: number of desired clusters
   :param method: type of single linkage
   :param distance: distance measurement
-  :param datasetID: identifier of data set
+  :param dataset_id: identifier of data set
   :return: jsonified output
   """
   try:
-    data = loadData(datasetID)
+    data = loadData(dataset_id)
     response = runHierarchical(data, int(k), method, distance)
     return ns.jsonify(response)
   except:
@@ -56,19 +57,19 @@ def hierarchicalClustering(k, method, distance, datasetID):
 
 ########################################################################################################################
 
-@app.route('/affinity/<damping>/<factor>/<preference>/<distance>/<datasetID>')
-def affinityPropagationClustering(damping, factor, preference, distance, datasetID):
+@app.route('/affinity/<damping>/<factor>/<preference>/<distance>/<dataset_id>')
+def affinity_propagation_clustering(damping, factor, preference, distance, dataset_id):
   """
   Access affinity propagation clustering plugin.
   :param damping:
   :param factor:
   :param preference:
   :param distance: distance measurement
-  :param datasetID:
+  :param dataset_id:
   :return:
   """
   try:
-    data = loadData(datasetID)
+    data = loadData(dataset_id)
     response = runAffinityPropagation(data, float(damping), float(factor), preference, distance)
     return ns.jsonify(response)
   except:
@@ -77,19 +78,19 @@ def affinityPropagationClustering(damping, factor, preference, distance, dataset
 
 ########################################################################################################################
 
-@app.route('/fuzzy/<numClusters>/<m>/<threshold>/<distance>/<datasetID>')
-def fuzzyClustering(numClusters, m, threshold, distance, datasetID):
+@app.route('/fuzzy/<num_clusters>/<m>/<threshold>/<distance>/<dataset_id>')
+def fuzzy_clustering(num_clusters, m, threshold, distance, dataset_id):
   """
-  :param numClusters:
+  :param num_clusters:
   :param m:
   :param threshold:
   :param distance:
-  :param datasetID:
+  :param dataset_id:
   :return:
   """
   try:
-    data = loadData(datasetID)
-    response = runFuzzy(data, int(numClusters), float(m), float(threshold), distance)
+    data = loadData(dataset_id)
+    response = runFuzzy(data, int(num_clusters), float(m), float(threshold), distance)
     return ns.jsonify(response)
   except:
     return ns.jsonify({})
@@ -97,9 +98,9 @@ def fuzzyClustering(numClusters, m, threshold, distance, datasetID):
 
 ########################################################################################################################
 
-def loadAttribute(jsonData, attr):
+def load_atttribute(json_data, attr):
   import json
-  data = json.loads(jsonData)
+  data = json.loads(json_data)
   if attr in data:
     return data[attr]
   else:
@@ -108,40 +109,40 @@ def loadAttribute(jsonData, attr):
 
 ########################################################################################################################
 
-@app.route('/distances/<metric>/<datasetID>/<sorted>', methods=['POST'])
-def getDistances(metric, datasetID, sorted):
+@app.route('/distances/<metric>/<dataset_id>/<sorted>', methods=['POST'])
+def get_distances(metric, dataset_id, sorted):
   """
   Compute the distances of the current stratification values to its centroid.
   :param metric:
-  :param datasetID:
+  :param dataset_id:
   :return: distances and labels sorted in ascending order
   """
-  data = loadData(datasetID)
+  data = loadData(dataset_id)
   labels = []
-  externLabels = None
+  extern_labels = None
 
   if 'group' in ns.request.values:
-    labels = loadAttribute(ns.request.values['group'], 'labels')
-    externLabels = loadAttribute(ns.request.values['group'], 'externLabels')
+    labels = load_atttribute(ns.request.values['group'], 'labels')
+    extern_labels = load_atttribute(ns.request.values['group'], 'externLabels')
   else:
     return ''
 
-  response = getClusterDistances(data, labels, metric, externLabels, sorted)
+  response = getClusterDistances(data, labels, metric, extern_labels, sorted)
   return ns.jsonify(response)
 
 
 ########################################################################################################################
 
-@app.route('/dendrogram/<numClusters>/<datasetID>', methods=['POST'])
-def dendrogramClusters(numClusters, datasetID):
-  data = loadData(datasetID)
+@app.route('/dendrogram/<num_clusters>/<dataset_id>', methods=['POST'])
+def dendrogram_clusters(num_clusters, dataset_id):
+  data = loadData(dataset_id)
 
   if 'group' in ns.request.values:
-    dendrogram = loadAttribute(ns.request.values['group'], 'dendrogram')
+    dendrogram = load_atttribute(ns.request.values['group'], 'dendrogram')
   else:
     return ''
 
-  response = getClustersFromDendrogram(data, dendrogram, int(numClusters))
+  response = getClustersFromDendrogram(data, dendrogram, int(num_clusters))
   return ns.jsonify(response)
 
 
