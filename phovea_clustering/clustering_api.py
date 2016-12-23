@@ -4,7 +4,7 @@
 # use flask library for server activities
 from phovea_server import ns
 # load services (that are executed by the server when certain website is called)
-from clustering_service import getClusterDistances, getClustersFromDendrogram, loadData, runAffinityPropagation, runFuzzy, runHierarchical, runKMeans
+from clustering_service import get_cluster_distances, get_clusters_from_dendrogram, load_data, run_affinity_propagation, run_fuzzy, run_hierarchical, run_kmeans
 
 
 __author__ = 'Michael Kern'
@@ -28,8 +28,8 @@ def kmeans_clustering(k, init_method, distance, dataset_id):
   :return: jsonified output
   """
   try:
-    data = loadData(dataset_id)
-    response = runKMeans(data, int(k), init_method, distance)
+    data = load_data(dataset_id)
+    response = run_kmeans(data, int(k), init_method, distance)
     return ns.jsonify(response)
   except:
     return ns.jsonify({})
@@ -48,8 +48,8 @@ def hierarchical_clustering(k, method, distance, dataset_id):
   :return: jsonified output
   """
   try:
-    data = loadData(dataset_id)
-    response = runHierarchical(data, int(k), method, distance)
+    data = load_data(dataset_id)
+    response = run_hierarchical(data, int(k), method, distance)
     return ns.jsonify(response)
   except:
     return ns.jsonify({})
@@ -69,8 +69,8 @@ def affinity_propagation_clustering(damping, factor, preference, distance, datas
   :return:
   """
   try:
-    data = loadData(dataset_id)
-    response = runAffinityPropagation(data, float(damping), float(factor), preference, distance)
+    data = load_data(dataset_id)
+    response = run_affinity_propagation(data, float(damping), float(factor), preference, distance)
     return ns.jsonify(response)
   except:
     return ns.jsonify({})
@@ -89,8 +89,8 @@ def fuzzy_clustering(num_clusters, m, threshold, distance, dataset_id):
   :return:
   """
   try:
-    data = loadData(dataset_id)
-    response = runFuzzy(data, int(num_clusters), float(m), float(threshold), distance)
+    data = load_data(dataset_id)
+    response = run_fuzzy(data, int(num_clusters), float(m), float(threshold), distance)
     return ns.jsonify(response)
   except:
     return ns.jsonify({})
@@ -117,7 +117,7 @@ def get_distances(metric, dataset_id, sorted):
   :param dataset_id:
   :return: distances and labels sorted in ascending order
   """
-  data = loadData(dataset_id)
+  data = load_data(dataset_id)
   labels = []
   extern_labels = None
 
@@ -127,7 +127,7 @@ def get_distances(metric, dataset_id, sorted):
   else:
     return ''
 
-  response = getClusterDistances(data, labels, metric, extern_labels, sorted)
+  response = get_cluster_distances(data, labels, metric, extern_labels, sorted)
   return ns.jsonify(response)
 
 
@@ -135,14 +135,14 @@ def get_distances(metric, dataset_id, sorted):
 
 @app.route('/dendrogram/<num_clusters>/<dataset_id>', methods=['POST'])
 def dendrogram_clusters(num_clusters, dataset_id):
-  data = loadData(dataset_id)
+  data = load_data(dataset_id)
 
   if 'group' in ns.request.values:
     dendrogram = load_atttribute(ns.request.values['group'], 'dendrogram')
   else:
     return ''
 
-  response = getClustersFromDendrogram(data, dendrogram, int(num_clusters))
+  response = get_clusters_from_dendrogram(data, dendrogram, int(num_clusters))
   return ns.jsonify(response)
 
 

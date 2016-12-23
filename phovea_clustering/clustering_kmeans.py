@@ -352,12 +352,12 @@ def _plugin_initialize():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def create(data, k, initMethod, distance):
+def create(data, k, init_method, distance):
   """
   by convention contain a factory called create returning the extension implementation
   :return:
   """
-  return KMeans(data, k, initMethod, distance)
+  return KMeans(data, k, init_method, distance)
 
 
 ########################################################################################################################
