@@ -20,7 +20,7 @@ def phovea(registry):
   registry.append('clustering', 'caleydo-clustering-fuzzy', 'phovea_clustering.clustering_fuzzy', {})
 
   registry.append('namespace', 'caleydo-clustering', 'phovea_clustering.clustering_api', {
-   'namespace': '/api/clustering'
+      'namespace': '/api/clustering'
   })
   # generator-phovea:end
   pass
