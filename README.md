@@ -1,23 +1,44 @@
-Caleydo Clustering
-==================
+phovea_clustering [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+=====================
 
-This repository is a server-side plugin for Caleydo to apply clustering algorithms on arbitrary matrices.
 
-Supported Algorithms:
---------------------
-- K-Means (Init methods: Forgy, Uniform, Random, Kmeans++)
-- Hierarchical Clustering (Single, Complete, Weighted, Median)
-- Affinity Propagation
-- Fuzzy Clustering
-- Various Distance Measurements(Euclidean, Chebyshef, Manhattan, Pearson, Spearman, ...)
 
-General Information:
--------------------
-- All these algorithms expect the input as matrix (or 2D numpy array)
-- It is assumed that the matrix is dense (no sparse matrix support right now)
-- NaN values will be converted to zero
-
-Future Work:
+Installation
 ------------
-- Improvement of algorithms
-- Combination of several clustering results
+
+```
+git clone https://github.com/phovea/phovea_clustering.git
+cd phovea_clustering
+npm install
+```
+
+Testing
+-------
+
+```
+npm test
+```
+
+Building
+--------
+
+```
+npm run build
+```
+
+
+
+***
+
+<a href="https://caleydo.org"><img src="http://caleydo.org/assets/images/logos/caleydo.svg" align="left" width="200px" hspace="10" vspace="6"></a>
+This repository is part of **[Phovea](http://phovea.caleydo.org/)**, a platform for developing web-based visualization applications. For tutorials, API docs, and more information about the build and deployment process, see the [documentation page](http://caleydo.org/documentation/).
+
+
+[phovea-image]: https://img.shields.io/badge/Phovea-Server%20Plugin-10ACDF.svg
+[phovea-url]: https://phovea.caleydo.org
+[npm-image]: https://badge.fury.io/js/phovea_clustering.svg
+[npm-url]: https://npmjs.org/package/phovea_clustering
+[travis-image]: https://travis-ci.org/phovea/phovea_clustering.svg?branch=master
+[travis-url]: https://travis-ci.org/phovea/phovea_clustering
+[daviddm-image]: https://david-dm.org/phovea/phovea_clustering.svg?theme=shields.io
+[daviddm-url]: https://david-dm.org/phovea/phovea_clustering

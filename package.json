@@ -1,46 +1,37 @@
 {
-  "name": "caleydo_clustering",
+  "files": [
+    "phovea_clustering",
+    "__init__.py",
+    "__main__.py",
+    "build",
+    "requirements.txt",
+    "requirements_dev.txt",
+    "docker_packages.txt"
+  ],
+  "scripts": {
+    "check": "flake8",
+    "pretest": "npm run check",
+    "test": "python setup.py test",
+    "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
+    "build": "python -c \"from distutils.dir_util import mkpath ; mkpath('./build/source')\" && (tar -c ./phovea_clustering --exclude '*.pyc' | tar -xC build/source)",
+    "predist": "npm run build",
+    "dist": "python setup.py bdist_egg"
+  },
+  "name": "phovea_clustering",
+  "description": "",
+  "homepage": "https://phovea.caleydo.org",
   "version": "1.0.0",
-  "license" : "SEE LICENSE IN LICENSE",
-  "repository": "K3rn1n4tor/caleydo_clustering",
-  "dependencies": {
+  "author": {
+    "name": "The Caleydo Team",
+    "email": "contact@caleydo.org",
+    "url": "https://caleydo.org"
   },
-  "peerDependencies": {
-    "caleydo_server": "*"
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/phovea/phovea_clustering/issues"
   },
-  "caleydo": {
-    "plugins": {
-      "python": [
-        {
-          "type": "clustering",
-          "id": "caleydo-clustering-kmeans",
-          "file": "clustering_kmeans"
-        },
-        {
-          "type": "clustering",
-          "id": "caleydo-clustering-hierarchical",
-          "file": "clustering_hierarchical"
-        },
-        {
-          "type": "clustering",
-          "id": "caleydo-clustering-affinity",
-          "file": "clustering_affinity"
-        },
-        {
-          "type": "clustering",
-          "id": "caleydo-clustering-fuzzy",
-          "file": "clustering_fuzzy"
-        },
-        {
-          "type": "namespace",
-          "id": "caleydo-clustering",
-          "file": "clustering_api",
-          "namespace": "/api/clustering"
-        }
-      ]
-    }
-  },
-  "publishConfig": {
-    "registry": "http://registry.caleydo.org/"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phovea/phovea_clustering.git"
   }
 }

@@ -1,0 +1,52 @@
+{
+  "generator-phovea": {
+    "type": "slib",
+    "name": "phovea_clustering",
+    "author": "The Caleydo Team",
+    "githubAccount": "phovea",
+    "modules": [
+      "phovea_server"
+    ],
+    "extensions": [],
+    "sextensions": [
+      {
+        "type": "clustering",
+        "id": "caleydo-clustering-kmeans",
+        "module": "clustering_kmeans",
+        "extras": {}
+      },
+      {
+        "type": "clustering",
+        "id": "caleydo-clustering-hierarchical",
+        "module": "clustering_hierarchical",
+        "extras": {}
+      },
+      {
+        "type": "clustering",
+        "id": "caleydo-clustering-affinity",
+        "module": "clustering_affinity",
+        "extras": {}
+      },
+      {
+        "type": "clustering",
+        "id": "caleydo-clustering-fuzzy",
+        "module": "clustering_fuzzy",
+        "extras": {}
+      },
+      {
+        "type": "namespace",
+        "id": "caleydo-clustering",
+        "module": "clustering_api",
+        "extras": {
+          "namespace": "/api/clustering"
+        }
+      }
+    ],
+    "libraries": [],
+    "unknown": {
+      "requirements": [],
+      "dockerPackages": []
+    },
+    "today": "Fri, 23 Dec 2016 03:02:24 GMT"
+  }
+}
