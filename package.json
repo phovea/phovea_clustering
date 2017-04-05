@@ -11,16 +11,17 @@
   "scripts": {
     "check": "flake8",
     "pretest": "npm run check",
-    "test": "python setup.py test",
+    "test": "test ! -d tests || python setup.py test",
     "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
-    "build": "python -c \"from distutils.dir_util import mkpath ; mkpath('./build/source')\" && (tar -c ./phovea_clustering --exclude '*.pyc' | tar -xC build/source)",
-    "predist": "npm run build",
-    "dist": "python setup.py bdist_egg"
+    "build": "python build.py",
+    "predist": "npm run build && npm run docs",
+    "dist": "python setup.py bdist_egg && cd build && tar cvzf ../dist/phovea_clustering.tar.gz *",
+    "docs": "sphinx-apidoc -o docs -f ./phovea_clustering && sphinx-build ./docs build/docs"
   },
   "name": "phovea_clustering",
   "description": "",
   "homepage": "https://phovea.caleydo.org",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "author": {
     "name": "The Caleydo Team",
     "email": "contact@caleydo.org",
